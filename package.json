@@ -1,0 +1,43 @@
+{
+  "name": "EngLishWeb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start" : "node server.js",
+    "server": "nodemon server.js --ignore 'engweb/'",
+    "client": "npm run serve --prefix ../engweb",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "firebase": "^8.8.0",
+    "joi": "^17.4.2",
+    "jquery": "^3.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.13.3",
+    "morgan": "^1.10.0",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "vue-axios": "^3.2.4",
+    "vue-router": "^4.0.10"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-vue": "^7.15.1",
+    "nodemon": "^2.0.12",
+    "prettier": "^2.3.2"
+  }
+}
