@@ -7,15 +7,22 @@ const exerciseCreateSchema = Joi.object().keys({
     deadline : Joi.date(),
     classId: Joi.string().required(),
     typeOfExams : Joi.string(),
+    startDate : Joi.date(),
+    endDate : Joi.date(),
+    fileExtension : Joi.string()
 })
 
 const exerciseUpdateSchema = Joi.object().keys({
     examFileUrl :Joi.string(),
     exerciseName : Joi.string(),
     description: Joi.string(),
+    fileExtension : Joi.string(),
     deadline : Joi.date(),
     disabled : Joi.boolean(),
     typeOfExams : Joi.string(),
+    startDate : Joi.date(),
+    endDate : Joi.date(),
+    isHide : Joi.boolean()
 })
 module.exports= { 
     exerciseCreateSchema,

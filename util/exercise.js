@@ -4,6 +4,9 @@ const {
   exerciseCreateSchema,
   exerciseUpdateSchema,
 } = require("../helper/validation_exercise");
+const mongoose = require("mongoose");
+const User = require("../models/users");
+const Score = require("../models/score");
 class APIfeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -56,6 +59,14 @@ const createExercise = async (req, res) => {
       ...result,
       createBy: req.user._id,
     });
+    console.log(result.exerciseName)
+    let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
+    if (!exerciseNameNotTaken) {
+      return res.status(400).json({
+        message: `exerciseName have already taken`,
+        success: false,
+      });
+    }
     const { classId } = result;
     // const lectureNameNotTaken = await lectureNameValidation(result.name);
     // if (!lectureNameNotTaken) {
@@ -141,7 +152,7 @@ const updateExercise = async (req, res) => {
 };
 
 const exerciseNameValidation = async (exercisename) => {
-  let oldExercise = await Exercise.findOne({ name: exercisename });
+  let oldExercise = await Exercise.findOne({ exerciseName: exercisename });
   return oldExercise ? false : true;
 };
 
@@ -180,7 +191,38 @@ const getExerciseByClassId = async (req, res) => {
       .sorting()
       .paginating();
 
-    const listExercise = await features.query;
+    let listExercise = await features.query;
+    const ids = listExercise.map((item) =>
+    mongoose.Types.ObjectId(item.exercisesId)
+  );
+  
+  let scores = await Score.find(
+    {
+      $and: [
+        { studentId: { $eq:  mongoose.Types.ObjectId(req.user._id) } },
+        { exercisesId: { $in: ids } },
+      ],
+    } 
+);
+
+listExercise = listExercise.map((item) => {
+  const startDate = new Date (item.startDate);
+  const endDate = new Date ( item.endDate);
+  if(startDate && endDate) {
+    item.isHide = Date.now() > startDate && Date.now< endDate ? false : true
+  } else 
+  {
+    item.isHide = true
+  }
+  return item
+
+});
+  listExercise = listExercise.map((item) => {
+    item.status = scores.find(
+      (u) => u.exercisesId.toString() === item.exercisesId.toString()
+    ) ? "Done" : "Not Done";
+    return item;
+  });
     return res.status(201).json({
       message: "Get list exercise successful",
       success: true,

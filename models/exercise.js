@@ -10,6 +10,15 @@ const ExerciseSchema = new Schema({
   deadline : {
     type: Date,
   },
+  startDate :{
+    type: Date,
+  },
+  endDate :{
+    type: Date,
+  },  
+  fileExtension : {
+    type : String,
+  },
   disabled :{
     type: Boolean,
     default : false
@@ -21,6 +30,13 @@ const ExerciseSchema = new Schema({
   typeOfExams : {
     type : String,
     default : null
+  },
+  status : {
+    type : String,
+  },
+  isHide :{
+    type : Boolean,
+    default : false
   },
   classId : { 
     type: String, 

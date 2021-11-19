@@ -3,14 +3,16 @@ const Joi = require('joi')
 const scoreCreateSchema = Joi.object().keys({
     answerFile :Joi.string().required(),
     exerciseId: Joi.string().required(),
-    studentId : Joi.string().required()
+    studentId : Joi.string().required(),
+    fileExtension : Joi.string(),
 })
 
 const scoreUpdateSchema = Joi.object().keys({
     answerFile :Joi.string(),
     exerciseId: Joi.string(),
     studentId : Joi.string().required(),
-    scores : Joi.string()
+    scores : Joi.string(),
+    fileExtension : Joi.string(),
 })
 module.exports= { 
     scoreCreateSchema,

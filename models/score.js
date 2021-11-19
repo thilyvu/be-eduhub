@@ -18,6 +18,17 @@ const ScoreSchema = new Schema({
   scores : {
     type : String,
   },
+  fileExtension : {
+    type : String,
+  },
+  createName :{
+    type : String,
+    default : null
+  },
+  createAvatar :{
+    type : String,
+    default : null
+  },
   createBy : {
     type : String,
     default : null
