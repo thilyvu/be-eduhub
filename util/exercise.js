@@ -90,7 +90,7 @@ const updateExercise = async (req, res) => {
   try {
     const result = await exerciseUpdateSchema.validateAsync(req.body);
     const oldExercise = await Exercise.findById(req.params.id);
-    if (result.exerciseName !== oldExercise.exerciseName) {
+    if (result && oldExercise && result.exerciseName !== oldExercise.exerciseName) {
       let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
       if (!exerciseNameNotTaken) {
         return res.status(400).json({
