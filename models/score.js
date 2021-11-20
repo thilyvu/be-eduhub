@@ -37,5 +37,8 @@ const ScoreSchema = new Schema({
     type: String,
     default : null
   },
+  fileName : {
+    type : String,
+  }
 },{timestamps : true})
 module.exports = model('score', ScoreSchema)

@@ -59,7 +59,6 @@ const createExercise = async (req, res) => {
       ...result,
       createBy: req.user._id,
     });
-    console.log(result.exerciseName)
     let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
     if (!exerciseNameNotTaken) {
       return res.status(400).json({
@@ -68,22 +67,7 @@ const createExercise = async (req, res) => {
       });
     }
     const { classId } = result;
-    // const lectureNameNotTaken = await lectureNameValidation(result.name);
-    // if (!lectureNameNotTaken) {
-    // return res.status(400).json({
-    //     message: `lecture name have already taken`,
-    //     success: false,
-    // });
-    // }
     const newExerciseCreated = await newExecise.save();
-    // const addedClass = await Class.findOneAndUpdate(
-    //   { _id: classId },
-    //   {
-    //     $push: { lectures: newLectureCreated },
-    //     $set: { updateBy: req.user._id },
-    //   }
-    // );
-
     return res.status(201).json({
       message: "New exercise create successful ",
       success: true,
@@ -106,15 +90,15 @@ const updateExercise = async (req, res) => {
   try {
     const result = await exerciseUpdateSchema.validateAsync(req.body);
     const oldExercise = await Exercise.findById(req.params.id);
-    // if (result.name !== oldLecture.name) {
-    //   const lectureNameNotTaken = await lectureNameValidation(result.name);
-    //   if (!lectureNameNotTaken) {
-    //     return res.status(400).json({
-    //       message: `Lecture name have already taken`,
-    //       success: false,
-    //     });
-    //   }
-    // }
+    if (result.exerciseName !== oldExercise.exerciseName) {
+      let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
+      if (!exerciseNameNotTaken) {
+        return res.status(400).json({
+          message: `Exercise name have already taken`,
+          success: false,
+        });
+      }
+    }
     const updateExercise = {
       ...result,
       updateBy: req.user.id,
@@ -209,10 +193,10 @@ listExercise = listExercise.map((item) => {
   const startDate = new Date (item.startDate);
   const endDate = new Date ( item.endDate);
   if(startDate && endDate) {
-    item.isHide = Date.now() > startDate && Date.now< endDate ? false : true
+    item.disabled = Date.now() > startDate && Date.now< endDate ? false : true
   } else 
   {
-    item.isHide = true
+    item.disabled = true
   }
   return item
 
@@ -220,7 +204,7 @@ listExercise = listExercise.map((item) => {
   listExercise = listExercise.map((item) => {
     item.status = scores.find(
       (u) => u.exercisesId.toString() === item.exercisesId.toString()
-    ) ? "Done" : "Not Done";
+    ) ? "Done" : "Not done";
     return item;
   });
     return res.status(201).json({

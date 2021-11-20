@@ -5,6 +5,7 @@ const scoreCreateSchema = Joi.object().keys({
     exerciseId: Joi.string().required(),
     studentId : Joi.string().required(),
     fileExtension : Joi.string(),
+    fileName :Joi.string()
 })
 
 const scoreUpdateSchema = Joi.object().keys({
@@ -13,6 +14,7 @@ const scoreUpdateSchema = Joi.object().keys({
     studentId : Joi.string().required(),
     scores : Joi.string(),
     fileExtension : Joi.string(),
+    fileName :Joi.string()
 })
 module.exports= { 
     scoreCreateSchema,

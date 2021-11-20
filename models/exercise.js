@@ -4,6 +4,9 @@ const ExerciseSchema = new Schema({
     type : String,
     required : true
   },
+  fileName : {
+    type : String,
+  },
   description : {
     type : String
   },

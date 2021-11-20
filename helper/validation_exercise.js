@@ -9,7 +9,8 @@ const exerciseCreateSchema = Joi.object().keys({
     typeOfExams : Joi.string(),
     startDate : Joi.date(),
     endDate : Joi.date(),
-    fileExtension : Joi.string()
+    fileExtension : Joi.string(),
+    fileName :Joi.string()
 })
 
 const exerciseUpdateSchema = Joi.object().keys({
@@ -22,7 +23,8 @@ const exerciseUpdateSchema = Joi.object().keys({
     typeOfExams : Joi.string(),
     startDate : Joi.date(),
     endDate : Joi.date(),
-    isHide : Joi.boolean()
+    isHide : Joi.boolean(),
+    fileName :Joi.string()
 })
 module.exports= { 
     exerciseCreateSchema,
