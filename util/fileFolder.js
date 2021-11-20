@@ -5,7 +5,7 @@ const {
   fileRegisterSchema,
   fileUpdateSchema,
   folderRegisterSchema,
-  folderUpdateSchema
+  folderUpdateSchema,
 } = require("../helper/validation_filesFolder");
 
 class APIfeatures {
@@ -317,34 +317,46 @@ const getListClassFolder = async (req, res) => {
       $and: [
         { classId: { $eq: Mongoose.Types.ObjectId(req.params.classId) } },
         {
-          path : { $eq: null },
+          path: { $eq: null },
         },
       ],
     });
     const rootFolderId = rootClassFolder._id;
-    const term  =await  FileFolder.find({path : new RegExp(`^,${rootFolderId.toString()},$`)});
+    const term = await FileFolder.find({
+      path: new RegExp(`^,${rootFolderId.toString()},$`),
+    });
     console.log(new RegExp(`^,${rootFolderId.toString()},$`));
     console.log(term);
     const features = new APIfeatures(
-      FileFolder.find({path : new RegExp(`^,${rootFolderId.toString()},$`)}),
+      FileFolder.find({ path: new RegExp(`^,${rootFolderId.toString()},$`) }),
       req.query
     )
       .filtering()
       .sorting()
       .paginating();
 
-    const listFolder = await features.query;
+    let listFolder = await features.query;
+    listFolder = listFolder.sort((a, b) => {
+      if (
+        a.fileType.toLowerCase() === "folder" &&
+        b.fileType.toLowerCase() === "file"
+      ) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
     return res.status(201).json({
       message: "Get folder successful",
       success: true,
-      data :listFolder
+      data: listFolder,
     });
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({
         message: err.message,
         success: false,
-        data:listFolder
+        data: listFolder,
       });
     }
     return res.status(500).json({
@@ -354,7 +366,7 @@ const getListClassFolder = async (req, res) => {
   }
 };
 
-const createRootFolderForUser = async (req,res) => {
+const createRootFolderForUser = async (req, res) => {
   const defaultFolderRoot = new FileFolder({
     fileType: "folder",
     path: null,
@@ -367,9 +379,9 @@ const createRootFolderForUser = async (req,res) => {
     success: true,
     data: defaultFolderRoot,
   });
-}
-const createRootFolderForClass = async (req,res) => {
-  console.log('in')
+};
+const createRootFolderForClass = async (req, res) => {
+  console.log("in");
   const defaultFolderRoot = new FileFolder({
     fileType: "folder",
     path: null,
@@ -382,14 +394,14 @@ const createRootFolderForClass = async (req,res) => {
     success: true,
     data: defaultFolderRoot,
   });
-}
+};
 const getListUserFolder = async (req, res) => {
   try {
     const rootUserFolder = await FileFolder.findOne({
       $and: [
         { userId: { $eq: req.user._id } },
         {
-          path : { $eq: null },
+          path: { $eq: null },
         },
       ],
     });
@@ -397,14 +409,24 @@ const getListUserFolder = async (req, res) => {
     // console.log(rootFolderId)
     // console.log( `/,${rootFolderId.toString()},/`)
     const features = new APIfeatures(
-      FileFolder.find({path : new RegExp(`^,${rootFolderId.toString()},$`)}),
+      FileFolder.find({ path: new RegExp(`^,${rootFolderId.toString()},$`) }),
       req.query
     )
       .filtering()
       .sorting()
       .paginating();
 
-    const listFolder = await features.query;
+    let listFolder = await features.query;
+    listFolder = listFolder.sort((a, b) => {
+      if (
+        a.fileType.toLowerCase() === "folder" &&
+        b.fileType.toLowerCase() === "file"
+      ) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
     return res.status(201).json({
       message: "Get list user folder successful",
       success: true,
@@ -426,18 +448,37 @@ const getListUserFolder = async (req, res) => {
 
 const getSubFolderById = async (req, res) => {
   try {
-    const rootFolder = await FileFolder.findById(Mongoose.Types.ObjectId(req.params.id));
+    const rootFolder = await FileFolder.findById(
+      Mongoose.Types.ObjectId(req.params.id)
+    );
     const rootFolderId = rootFolder._id;
     const rootFolderPath = rootFolder.path;
     const features = new APIfeatures(
-      FileFolder.find({path : new RegExp(`^${rootFolderPath.toString()}${rootFolderId.toString()},$`)}),
+      FileFolder.find({
+        path:
+          rootFolderPath !== null
+            ? new RegExp(
+                `^${rootFolderPath.toString()}${rootFolderId.toString()},$`
+              )
+            : new RegExp(`^,${rootFolderId.toString()},$`),
+      }),
       req.query
     )
       .filtering()
       .sorting()
       .paginating();
 
-    const listFolder = await features.query;
+    let listFolder = await features.query;
+    listFolder = listFolder.sort((a, b) => {
+      if (
+        a.fileType.toLowerCase() === "folder" &&
+        b.fileType.toLowerCase() === "file"
+      ) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
     return res.status(201).json({
       message: "Get list user folder successful",
       success: true,
@@ -459,7 +500,9 @@ const getSubFolderById = async (req, res) => {
 const deleteFileFolder = async (req, res) => {
   try {
     // const deleteFile = await FileFolder.findById(req.params.id);
-    const rootFolder = await FileFolder.findById(Mongoose.Types.ObjectId(req.params.id));
+    const rootFolder = await FileFolder.findById(
+      Mongoose.Types.ObjectId(req.params.id)
+    );
     const rootFolderId = rootFolder._id;
     const rootFolderPath = rootFolder.path;
 
@@ -471,9 +514,13 @@ const deleteFileFolder = async (req, res) => {
         success: false,
       });
     }
-    await FileFolder.deleteOne(rootFolder)
-    await FileFolder.deleteMany({path : new RegExp(`^${rootFolderPath.toString()}${rootFolderId.toString()},`)});
-    
+    await FileFolder.deleteOne(rootFolder);
+    await FileFolder.deleteMany({
+      path: new RegExp(
+        `^${rootFolderPath.toString()}${rootFolderId.toString()},`
+      ),
+    });
+
     return res.status(201).json({
       message: "File folder successfully deleted",
       success: true,
@@ -495,5 +542,5 @@ module.exports = {
   getListUserFolder,
   getSubFolderById,
   createRootFolderForUser,
-  createRootFolderForClass
+  createRootFolderForClass,
 };

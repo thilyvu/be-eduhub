@@ -90,6 +90,12 @@ const updateExercise = async (req, res) => {
   try {
     const result = await exerciseUpdateSchema.validateAsync(req.body);
     const oldExercise = await Exercise.findById(req.params.id);
+    if (!oldExercise) {
+      return res.status(400).json({
+        message: `Exercise id not exist`,
+        success: false,
+      });
+    }
     if (result && oldExercise && result.exerciseName !== oldExercise.exerciseName) {
       let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
       if (!exerciseNameNotTaken) {
