@@ -65,7 +65,12 @@ const createFile = async (req, res) => {
       // console.log(classId);
       if (classId) {
         const parentClassFolder = await FileFolder.findOne({
-          classId: Mongoose.Types.ObjectId(classId),
+          $and: [
+            { classId: { $eq: Mongoose.Types.ObjectId(classId) } },
+            {
+              path: { $eq: null },
+            },
+          ],
         });
         if (parentClassFolder !== null) {
           parentPath = parentClassFolder.path;
@@ -310,7 +315,7 @@ const getListClassFolder = async (req, res) => {
   try {
     const rootClassFolder = await FileFolder.findOne({
       $and: [
-        { classId: { $eq: req.params.classId } },
+        { classId: { $eq: Mongoose.Types.ObjectId(req.params.classId) } },
         {
           path : { $eq: null },
         },
@@ -318,7 +323,8 @@ const getListClassFolder = async (req, res) => {
     });
     const rootFolderId = rootClassFolder._id;
     const term  =await  FileFolder.find({path : new RegExp(`^,${rootFolderId.toString()},$`)});
-    console.log(term)
+    console.log(new RegExp(`^,${rootFolderId.toString()},$`));
+    console.log(term);
     const features = new APIfeatures(
       FileFolder.find({path : new RegExp(`^,${rootFolderId.toString()},$`)}),
       req.query
@@ -331,6 +337,7 @@ const getListClassFolder = async (req, res) => {
     return res.status(201).json({
       message: "Get folder successful",
       success: true,
+      data :listFolder
     });
   } catch (err) {
     if (err.isJoi === true) {
@@ -347,8 +354,35 @@ const getListClassFolder = async (req, res) => {
   }
 };
 
-
-
+const createRootFolderForUser = async (req,res) => {
+  const defaultFolderRoot = new FileFolder({
+    fileType: "folder",
+    path: null,
+    userId: req.body.userId,
+    createBy: req.user._id,
+  });
+  await defaultFolderRoot.save();
+  return res.status(201).json({
+    message: "New File create successful ",
+    success: true,
+    data: defaultFolderRoot,
+  });
+}
+const createRootFolderForClass = async (req,res) => {
+  console.log('in')
+  const defaultFolderRoot = new FileFolder({
+    fileType: "folder",
+    path: null,
+    classId: req.body.classId,
+    createBy: req.user._id,
+  });
+  await defaultFolderRoot.save();
+  return res.status(201).json({
+    message: "New File create successful ",
+    success: true,
+    data: defaultFolderRoot,
+  });
+}
 const getListUserFolder = async (req, res) => {
   try {
     const rootUserFolder = await FileFolder.findOne({
@@ -459,5 +493,7 @@ module.exports = {
   getListClassFolder,
   updateFolder,
   getListUserFolder,
-  getSubFolderById
+  getSubFolderById,
+  createRootFolderForUser,
+  createRootFolderForClass
 };
