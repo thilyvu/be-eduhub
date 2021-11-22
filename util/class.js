@@ -450,7 +450,60 @@ const addStudentToClass = async (req, res) => {
     });
   }
 };
+const getListClassByStudentId = async (req, res) => {
+  try {
+    const features = new APIfeatures(
+      Class.find({
+        $or: [
+          ({
+            "students._id": mongoose.Types.ObjectId(req.user._id),
+          },
+          { createBy: req.user._id }),
+        ],
+      }).select([
+        "-approveMode",
+        "-newFeeds",
+        "-calendars",
+        "-students",
+        "-lectures",
+        "-fileFolder",
+        "-exercise",
+        "-classCode",
+      ]),
+      req.query
+    )
+      .filtering()
+      .sorting()
+      .paginating();
 
+    const listClass = await features.query;
+    // const listClass = await Class.find({
+    //   $or: [
+    //     ({
+    //       "students._id": mongoose.Types.ObjectId(req.user._id),
+    //     },
+    //     { createBy: req.user._id }),
+    //   ],
+    // });
+    return res.status(201).json({
+      message: "Get list class success ",
+      success: true,
+      data: listClass,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+  console.log(listClass);
+};
 const leaveClass = async (req, res) => {
   try {
     const oldClass = await Class.findById(req.params.id);
@@ -606,7 +659,7 @@ const getClassById = async (req, res) => {
         ).name;
         return comment;
       });
-      return newFeed
+      return newFeed;
     });
     if (!listClass)
       return res.status(400).json({ msg: "Class does not exist." });
@@ -729,4 +782,5 @@ module.exports = {
   approveToClass,
   addStudentToClass,
   deleteStudentFromClass,
+  getListClassByStudentId,
 };

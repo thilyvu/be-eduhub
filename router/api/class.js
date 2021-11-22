@@ -12,6 +12,7 @@ const {
   approveToClass,
   deleteStudentFromClass,
   addStudentToClass,
+  getListClassByStudentId,
 } = require("../../util/class");
 const router = Router();
 
@@ -41,6 +42,9 @@ router.post("/addStudentToClass", userAuth, async (req, res) => {
 // });
 router.get("/class", userAuth, async (req, res) => {
   await getListClass(req, res);
+});
+router.get("/classByUserId", userAuth, async (req, res) => {
+  await getListClassByStudentId(req, res);
 });
 
 router.get("/classById/:id", userAuth, async (req, res) => {
