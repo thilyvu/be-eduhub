@@ -217,6 +217,8 @@ const userLogin = async (userCreds, role, res) => {
       let result = {
         username: user.username,
         role: user.role,
+        id: user._id,
+        avatar: user.avatar,
         email: user.email,
         token: `Bearer ${token}`,
         refreshToken: `Bearer ${refreshToken}`,
