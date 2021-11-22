@@ -10,7 +10,8 @@ const {
   getListUser,
   getUserById,
   getUserByEmail,
-  resetPassword
+  resetPassword,
+  refreshToken,
 } = require("../../util/auth");
 const router = Router();
 
@@ -22,6 +23,9 @@ router.post("/register-teacher", async (req, res) => {
 });
 router.post("/register-super-admin", async (req, res) => {
   await userRegister(req.body, "admin", res);
+});
+router.post("/refresh-token", async (req, res) => {
+  await refreshToken(req, res);
 });
 
 router.post("/login-user", async (req, res) => {
@@ -42,12 +46,22 @@ router.put("/resetPassword/:id", async (req, res) => {
 router.post("/logout", (req, res) => {
   req.user = null;
 });
-router.get("/getListUsers", userAuth,checkRole(["teacher"]), async (req, res) => {
-  await getListUser(req, res);
-});
-router.get("/getUser/:id", userAuth,checkRole(["teacher"]), async (req, res) => {
-  await getUserById(req, req.params.id, res);
-});
+router.get(
+  "/getListUsers",
+  userAuth,
+  checkRole(["teacher"]),
+  async (req, res) => {
+    await getListUser(req, res);
+  }
+);
+router.get(
+  "/getUser/:id",
+  userAuth,
+  checkRole(["teacher"]),
+  async (req, res) => {
+    await getUserById(req, req.params.id, res);
+  }
+);
 router.get("/getUserEmail/", userAuth, async (req, res) => {
   await getUserByEmail(req.body, res);
 });
@@ -75,6 +89,5 @@ router.get(
     return res.json(serializeUser(req.user));
   }
 );
-
 
 module.exports = router;

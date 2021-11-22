@@ -11,6 +11,7 @@ const {
   userUpdateSchema,
   userUpdatePasswordValidation,
   userResetPasswordValidation,
+  userTokenSchema,
 } = require("../helper/validation_schema");
 class APIfeatures {
   constructor(query, queryString) {
@@ -200,6 +201,16 @@ const userLogin = async (userCreds, role, res) => {
           email: user.email,
         },
         SECRET,
+        { expiresIn: "2 days" }
+      );
+      let refreshToken = jwt.sign(
+        {
+          user_id: user._id,
+          role: user.role,
+          username: user.username,
+          email: user.email,
+        },
+        SECRET,
         { expiresIn: "7 days" }
       );
 
@@ -208,6 +219,7 @@ const userLogin = async (userCreds, role, res) => {
         role: user.role,
         email: user.email,
         token: `Bearer ${token}`,
+        refreshToken: `Bearer ${refreshToken}`,
         expiresIn: 168,
       };
       return res.status(200).json({
@@ -221,6 +233,39 @@ const userLogin = async (userCreds, role, res) => {
         success: false,
       });
     }
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
+const refreshToken = async (req, res) => {
+  try {
+    let oldRefreshToken = req.body.refreshToken;
+    const payload = jwt.verify(oldRefreshToken, SECRET);
+    let refreshToken = jwt.sign(
+      {
+        user_id: payload.user_id,
+        role: payload.role,
+        username: payload.username,
+        email: payload.email,
+      },
+      SECRET,
+      { expiresIn: "2 days" }
+    );
+
+    let result = {
+      username: payload.username,
+      role: payload.role,
+      email: payload.email,
+      token: `Bearer ${refreshToken}`,
+      expiresIn: 168,
+    };
+    return res.status(200).json({
+      result,
+      success: true,
+    });
   } catch (err) {
     return res.status(500).json({
       message: err.message,
@@ -246,8 +291,8 @@ const serializeUser = (user) => {
     phone: user.phone,
     province: user.province,
     school: user.school,
-    role : user.role,
-    id: user.id
+    role: user.role,
+    id: user.id,
   };
 };
 const resetPassword = async (req, userId, res) => {
@@ -370,4 +415,5 @@ module.exports = {
   getUserById,
   getUserByEmail,
   resetPassword,
+  refreshToken,
 };
