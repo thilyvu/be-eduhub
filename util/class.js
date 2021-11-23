@@ -705,12 +705,14 @@ const getListClass = async (req, res) => {
       .filtering()
       .sorting()
       .paginating();
-
+      const total= await Class.countDocuments({});
+      // console.log(a);
     const listClass = await features.query;
     return res.status(201).json({
       message: "Get list class successful",
       success: true,
       data: listClass,
+      total:total
     });
   } catch (err) {
     if (err.isJoi === true) {
