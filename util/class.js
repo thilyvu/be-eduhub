@@ -692,7 +692,6 @@ const getListClass = async (req, res) => {
   try {
     const features = new APIfeatures(
       Class.find().select([
-        "-approveMode",
         "-newFeeds",
         "-calendars",
         "-students",
