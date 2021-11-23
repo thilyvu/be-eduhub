@@ -455,10 +455,10 @@ const getListClassByStudentId = async (req, res) => {
     const features = new APIfeatures(
       Class.find({
         $or: [
-          ({
+          {
             "students._id": mongoose.Types.ObjectId(req.user._id),
           },
-          { createBy: req.user._id }),
+          { createBy: req.user._id },
         ],
       }).select([
         "-approveMode",
@@ -705,14 +705,14 @@ const getListClass = async (req, res) => {
       .filtering()
       .sorting()
       .paginating();
-      const total= await Class.countDocuments({});
-      // console.log(a);
+    const total = await Class.countDocuments({});
+    // console.log(a);
     const listClass = await features.query;
     return res.status(201).json({
       message: "Get list class successful",
       success: true,
       data: listClass,
-      total:total
+      total: total,
     });
   } catch (err) {
     if (err.isJoi === true) {
