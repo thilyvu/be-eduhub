@@ -468,7 +468,6 @@ const getListClassByStudentId = async (req, res) => {
         "-lectures",
         "-fileFolder",
         "-exercise",
-        "-classCode",
       ]),
       req.query
     )
