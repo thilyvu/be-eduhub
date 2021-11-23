@@ -699,7 +699,6 @@ const getListClass = async (req, res) => {
         "-lectures",
         "-fileFolder",
         "-exercise",
-        "-classCode",
       ]),
       req.query
     )
