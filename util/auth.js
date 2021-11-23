@@ -223,6 +223,7 @@ const userLogin = async (userCreds, role, res) => {
         token: `Bearer ${token}`,
         refreshToken: `Bearer ${refreshToken}`,
         expiresIn: 168,
+        name: user.name
       };
       return res.status(200).json({
         ...result,
