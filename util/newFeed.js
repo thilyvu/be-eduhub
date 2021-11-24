@@ -62,9 +62,7 @@ const createNewFeed = async (req, res) => {
 
     const addedClass = await Class.findOneAndUpdate(
       { _id: classId },
-      { $push: { newFeeds: newFeedCreated },
-       $set: {updateBy: req.user._id } },
-
+      { $push: { newFeeds: newFeedCreated }, $set: { updateBy: req.user._id } }
     );
     return res.status(201).json({
       message: "NewFeed create successful and added to Class ",
@@ -92,19 +90,22 @@ const updateNewFeed = async (req, res) => {
       ...result,
       updateBy: req.user.id,
     };
-    const updatedNewFeed = await Object.assign(oldNewFeed,updateNewFeed)
+    const updatedNewFeed = await Object.assign(oldNewFeed, updateNewFeed);
     if (!updatedNewFeed) return null;
     await updatedNewFeed.save();
     const newFeedId = updatedNewFeed._id;
 
-    const updateClass = await Class.findOneAndUpdate({"_id" : oldNewFeed.classId, "newFeeds._id" : newFeedId}, { 
-      $set : { 
-        "newFeeds.$" : updatedNewFeed
+    const updateClass = await Class.findOneAndUpdate(
+      { _id: oldNewFeed.classId, "newFeeds._id": newFeedId },
+      {
+        $set: {
+          "newFeeds.$": updatedNewFeed,
+        },
       }
-    })
+    );
     return res.status(201).json({
       message: "newFeed update successful ",
-      success: true,  
+      success: true,
       data: updateClass,
     });
   } catch (err) {
@@ -134,10 +135,12 @@ const getListNewFeed = async (req, res) => {
       .paginating();
 
     const listNewFeed = await features.query;
+    const total = await NewFeed.countDocuments({});
     return res.status(201).json({
       message: "Get list newfeed successful",
       success: true,
       data: listNewFeed,
+      total: total,
     });
   } catch (err) {
     if (err.isJoi === true) {
@@ -180,13 +183,14 @@ const deleteNewFeed = async (req, res) => {
     const newFeedId = newFeed._id;
     const classId = newFeed.classId;
 
-    const updatedClass = await Class.findByIdAndUpdate(classId,   
-      { $pull: { 'newFeeds': {  _id: newFeedId } } })
+    const updatedClass = await Class.findByIdAndUpdate(classId, {
+      $pull: { newFeeds: { _id: newFeedId } },
+    });
     await NewFeed.remove(newFeed);
     return res.status(201).json({
       message: "NewFeed successfully deleted",
       success: true,
-      data: updatedClass
+      data: updatedClass,
     });
   } catch (err) {
     return res.status(500).json({

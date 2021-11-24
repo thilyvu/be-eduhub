@@ -115,10 +115,12 @@ const getListScore = async (req, res) => {
       .paginating();
 
     const listScore = await features.query;
+    const total = await Score.countDocuments({});
     return res.status(201).json({
       message: "Get list score successful",
       success: true,
       data: listScore,
+      total: total,
     });
   } catch (err) {
     if (err.isJoi === true) {

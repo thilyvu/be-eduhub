@@ -81,7 +81,7 @@ const createComment = async (req, res) => {
     const updateClass = await Class.findOneAndUpdate(
       {
         $and: [
-          { _id: { $eq:  mongoose.Types.ObjectId(addedNewFeed.classId) } },
+          { _id: { $eq: mongoose.Types.ObjectId(addedNewFeed.classId) } },
           {
             "newFeeds._id": { $eq: mongoose.Types.ObjectId(result.newFeedId) },
           },
@@ -135,7 +135,7 @@ const updateComment = async (req, res) => {
     return res.status(201).json({
       message: "Comment update successful ",
       success: true,
-      data: updateNewFeed
+      data: updateNewFeed,
     });
   } catch (err) {
     if (err.isJoi === true) {
@@ -164,10 +164,12 @@ const getListComment = async (req, res) => {
       .paginating();
 
     const listComment = await features.query;
+    const total = await Comment.countDocuments({});
     return res.status(201).json({
       message: "Get list comment successful",
       success: true,
       data: listComment,
+      total: total,
     });
   } catch (err) {
     if (err.isJoi === true) {
@@ -209,15 +211,15 @@ const deleteComment = async (req, res) => {
 
     const commentId = deleteComment._id;
     const newFeedId = deleteComment.newFeedId;
-    console.log(commentId,newFeedId)
+    console.log(commentId, newFeedId);
     const updatedNewFeed = await Class.findByIdAndUpdate(newFeedId, {
-      $pull: { comments: { _id:  commentId } },
+      $pull: { comments: { _id: commentId } },
     });
     await Comment.deleteOne(deleteComment);
     return res.status(201).json({
       message: "Comment successfully deleted",
       success: true,
-      data : updatedNewFeed
+      data: updatedNewFeed,
     });
   } catch (err) {
     return res.status(500).json({

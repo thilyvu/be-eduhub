@@ -153,10 +153,12 @@ const getListLecture = async (req, res) => {
       .paginating();
 
     const listLecture = await features.query;
+    const total = await Lecture.countDocuments({});
     return res.status(201).json({
       message: "Get list lecture successful",
       success: true,
       data: listLecture,
+      total: total,
     });
   } catch (err) {
     if (err.isJoi === true) {

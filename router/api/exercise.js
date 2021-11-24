@@ -20,6 +20,9 @@ router.get('/exercise',userAuth, async (req,res)=>{
 router.get('/exerciseById/:id',userAuth, async (req,res)=>{
   await getExerciseById(req,res)
  })
+ router.get('/getAllFileFolder/:id',userAuth, async (req,res)=>{
+  await getExerciseById(req,res)
+ })
  router.get('/exerciseByClassId/:classId',userAuth, async (req,res)=>{
   await getExerciseByClassId(req,res)
  })

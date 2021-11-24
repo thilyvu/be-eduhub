@@ -550,10 +550,12 @@ const getAllFileFolder = async (req, res) => {
         return 1;
       }
     });
+    const total = await FileFolder.countDocuments({});
     return res.status(201).json({
       message: "Get list file folder successful",
       success: true,
       data: listFolder,
+      total: total,
     });
   } catch (err) {
     if (err.isJoi === true) {

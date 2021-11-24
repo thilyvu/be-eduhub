@@ -223,7 +223,7 @@ const userLogin = async (userCreds, role, res) => {
         token: `Bearer ${token}`,
         refreshToken: `Bearer ${refreshToken}`,
         expiresIn: 168,
-        name: user.name
+        name: user.name,
       };
       return res.status(200).json({
         ...result,
@@ -366,11 +366,12 @@ const getListUser = async (req, res) => {
       .paginating();
 
     const users = await features.query;
-
+    const total = await User.countDocuments({});
     res.json({
       status: "success",
       result: users.length,
       data: users,
+      total: total,
     });
   } catch (err) {
     return res.status(500).json({ msg: err.message });
