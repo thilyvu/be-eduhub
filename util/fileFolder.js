@@ -532,6 +532,42 @@ const deleteFileFolder = async (req, res) => {
     });
   }
 };
+const getAllFileFolder = async (req, res) => {
+  try {
+    const features = new APIfeatures(FileFolder.find(), req.query)
+      .filtering()
+      .sorting()
+      .paginating();
+
+    let listFolder = await features.query;
+    listFolder = listFolder.sort((a, b) => {
+      if (
+        a.fileType.toLowerCase() === "folder" &&
+        b.fileType.toLowerCase() === "file"
+      ) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    return res.status(201).json({
+      message: "Get list file folder successful",
+      success: true,
+      data: listFolder,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
 module.exports = {
   createFile,
   createFolder,
@@ -543,4 +579,5 @@ module.exports = {
   getSubFolderById,
   createRootFolderForUser,
   createRootFolderForClass,
+  getAllFileFolder,
 };

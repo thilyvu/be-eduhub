@@ -12,6 +12,7 @@ const {
   getSubFolderById,
   createRootFolderForUser,
   createRootFolderForClass,
+  getAllFileFolder,
 } = require("../../util/fileFolder");
 const router = Router();
 
@@ -35,6 +36,9 @@ router.put("/folder/:id", userAuth, async (req, res) => {
 });
 router.get("/getListUserFolder", userAuth, async (req, res) => {
   await getListUserFolder(req, res);
+});
+router.get("/getAllFileFolder", userAuth, async (req, res) => {
+  await getAllFileFolder(req, res);
 });
 router.get("/getListClassFolder/:classId", userAuth, async (req, res) => {
   await getListClassFolder(req, res);
