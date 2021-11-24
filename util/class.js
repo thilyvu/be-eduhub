@@ -125,7 +125,15 @@ const updateClass = async (req, res) => {
         });
       }
     }
-
+    if (result.classCode !== oldClass.classCode) {
+      let classcodeNotTaken = await classCodeValidation(result.classCode);
+      if (!classcodeNotTaken) {
+        return res.status(400).json({
+          message: `Classcode have already taken`,
+          success: false,
+        });
+      }
+    }
     const updateClass = {
       ...result,
       updateBy: req.user._id,

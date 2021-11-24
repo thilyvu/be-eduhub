@@ -20,6 +20,7 @@ const classUpdateSchema = Joi.object().keys({
   subject: Joi.string(),
   grade: Joi.string(),
   province: Joi.string(),
+  classCode: Joi.string(),
 });
 const addToClassSchema = Joi.object().keys({
   classId: Joi.string().required(),
