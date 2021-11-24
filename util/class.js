@@ -501,7 +501,6 @@ const getListClassByStudentId = async (req, res) => {
       success: false,
     });
   }
-  console.log(listClass);
 };
 const leaveClass = async (req, res) => {
   try {

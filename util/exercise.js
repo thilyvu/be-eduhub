@@ -1,5 +1,5 @@
 const Exercise = require("../models/exercise");
-// const Class = require("../models/class");
+const Class = require("../models/class");
 const {
   exerciseCreateSchema,
   exerciseUpdateSchema,
@@ -46,7 +46,7 @@ class APIfeatures {
 
   paginating() {
     const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 9;
+    const limit = this.queryString.limit * 1 || 100;
     const skip = (page - 1) * limit;
     this.query = this.query.skip(skip).limit(limit);
     return this;
@@ -59,7 +59,9 @@ const createExercise = async (req, res) => {
       ...result,
       createBy: req.user._id,
     });
-    let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
+    let exerciseNameNotTaken = await exerciseNameValidation(
+      result.exerciseName
+    );
     if (!exerciseNameNotTaken) {
       return res.status(400).json({
         message: `exerciseName have already taken`,
@@ -96,8 +98,14 @@ const updateExercise = async (req, res) => {
         success: false,
       });
     }
-    if (result && oldExercise && result.exerciseName !== oldExercise.exerciseName) {
-      let exerciseNameNotTaken = await exerciseNameValidation(result.exerciseName);
+    if (
+      result &&
+      oldExercise &&
+      result.exerciseName !== oldExercise.exerciseName
+    ) {
+      let exerciseNameNotTaken = await exerciseNameValidation(
+        result.exerciseName
+      );
       if (!exerciseNameNotTaken) {
         return res.status(400).json({
           message: `Exercise name have already taken`,
@@ -175,44 +183,56 @@ const getListExercise = async (req, res) => {
 
 const getExerciseByClassId = async (req, res) => {
   try {
-    console.log(req.params.classId);
-    const features = new APIfeatures(Exercise.find({"classId" :req.params.classId }), req.query)
+    const oldClass = await Class.findById(req.params.classId);
+    const total = oldClass.students.length;
+    const features = new APIfeatures(
+      Exercise.find({ classId: req.params.classId }),
+      req.query
+    )
       .filtering()
       .sorting()
       .paginating();
 
     let listExercise = await features.query;
-    const ids = listExercise.map((item) =>
-    mongoose.Types.ObjectId(item.exercisesId)
-  );
-  
-  let scores = await Score.find(
-    {
+    const ids = listExercise.map((item) => mongoose.Types.ObjectId(item._id));
+
+    let scores = await Score.find({
       $and: [
-        { studentId: { $eq:  mongoose.Types.ObjectId(req.user._id) } },
-        { exercisesId: { $in: ids } },
+        { studentId: { $eq: mongoose.Types.ObjectId(req.user._id) } },
+        { exerciseId: { $in: ids } },
       ],
-    } 
-);
-
-listExercise = listExercise.map((item) => {
-  const startDate = new Date (item.startDate);
-  const endDate = new Date ( item.endDate);
-  if(startDate && endDate) {
-    item.disabled = Date.now() > startDate && Date.now< endDate ? false : true
-  } else 
-  {
-    item.disabled = true
-  }
-  return item
-
-});
-  listExercise = listExercise.map((item) => {
-    item.status = scores.find(
-      (u) => u.exercisesId.toString() === item.exercisesId.toString()
-    ) ? "Done" : "Not done";
-    return item;
-  });
+    });
+    let totalScores = await Score.find({ exerciseId: { $in: ids } });
+    listExercise = listExercise.map((item) => {
+      const startDate = new Date(item.startDate);
+      const endDate = new Date(item.endDate);
+      if (startDate && endDate) {
+        item.disabled =
+          Date.now() > startDate && Date.now < endDate ? false : true;
+      } else {
+        item.disabled = true;
+      }
+      return item;
+    });
+    listExercise = listExercise.map((item) => {
+      item.totalStudents = total;
+      console.log(item);
+      const findedScore = scores.find(
+        (u) => u.exerciseId.toString() === item._id.toString()
+      );
+      const totalAnswer = totalScores.filter(
+        (u) => u.exerciseId.toString() === item._id.toString()
+      );
+      console.log(totalAnswer);
+      item.status = "Not done";
+      item.totalAnswers = totalAnswer ? totalAnswer.length : "0";
+      if (findedScore) {
+        item.status = "Done";
+        item.score = findedScore.scores ? findedScore.scores : null;
+        item.comment = findedScore.comment ? findedScore.comment : "";
+      }
+      return item;
+    });
     return res.status(201).json({
       message: "Get list exercise successful",
       success: true,
@@ -268,10 +288,10 @@ const deleteExercise = async (req, res) => {
   }
 };
 module.exports = {
-    createExercise,
+  createExercise,
   updateExercise,
   deleteExercise,
   getListExercise,
   getExerciseById,
-  getExerciseByClassId
+  getExerciseByClassId,
 };
