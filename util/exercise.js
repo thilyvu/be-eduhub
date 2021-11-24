@@ -206,9 +206,11 @@ const getExerciseByClassId = async (req, res) => {
     listExercise = listExercise.map((item) => {
       const startDate = new Date(item.startDate);
       const endDate = new Date(item.endDate);
+      const currentTime = Date.now();
+      const currentDate = new Date(currentTime);
       if (startDate && endDate) {
         item.disabled =
-          Date.now() > startDate && Date.now < endDate ? false : true;
+          currentDate > startDate && currentDate < endDate ? false : true;
       } else {
         item.disabled = true;
       }
@@ -216,14 +218,12 @@ const getExerciseByClassId = async (req, res) => {
     });
     listExercise = listExercise.map((item) => {
       item.totalStudents = total;
-      console.log(item);
       const findedScore = scores.find(
         (u) => u.exerciseId.toString() === item._id.toString()
       );
       const totalAnswer = totalScores.filter(
         (u) => u.exerciseId.toString() === item._id.toString()
       );
-      console.log(totalAnswer);
       item.status = "Not done";
       item.totalAnswers = totalAnswer ? totalAnswer.length : "0";
       if (findedScore) {
