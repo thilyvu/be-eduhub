@@ -122,6 +122,13 @@ const getListScore = async (req, res) => {
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy.toString()
       ).name;
+
+      // item.exerciseName =
+      //   exercises.find((u) => {
+      //     if (u) {
+      //       return u.exerciseId.toString() === item.exerciseId.toString();
+      //     }
+      //   }).exerciseName || "";
       return item;
     });
     const total = await Score.countDocuments({});
@@ -160,19 +167,12 @@ const getListExerciseScore = async (req, res) => {
     let listScore = await features.query;
     const ids = listScore.map((item) => mongoose.Types.ObjectId(item.createBy));
     let user = await User.find({ _id: { $in: ids } });
-    const ExerciseIds = listScore.map((item) =>
-      mongoose.Types.ObjectId(item.exerciseId)
-    );
-    let exercises = await Exercise.find({ _id: { $in: ExerciseIds } });
     listScore = listScore.map((item) => {
       item.createAvatar = user.find(
         (u) => u._id.toString() === item.createBy.toString()
       ).avatar;
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy.toString()
-      ).name;
-      item.exerciseName = exercises.find(
-        (u) => u._id.toString() === item.exerciseId.toString()
       ).name;
       return item;
     });

@@ -44,6 +44,9 @@ const ScoreSchema = new Schema(
     fileName: {
       type: String,
     },
+    exerciseName: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
