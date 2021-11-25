@@ -115,6 +115,17 @@ const getListScore = async (req, res) => {
       .paginating();
 
     const listScore = await features.query;
+    const ids = listScore.map((item) => mongoose.Types.ObjectId(item.createBy));
+    let user = await User.find({ _id: { $in: ids } });
+    listScore = listScore.map((item) => {
+      item.createAvatar = user.find(
+        (u) => u._id.toString() === item.createBy.toString()
+      ).avatar;
+      item.createName = user.find(
+        (u) => u._id.toString() === item.createBy.toString()
+      ).name;
+      return item;
+    });
     const total = await Score.countDocuments({});
     return res.status(201).json({
       message: "Get list score successful",
@@ -149,16 +160,14 @@ const getListExerciseScore = async (req, res) => {
       .paginating();
 
     let listScore = await features.query;
-    const ids = listScore.map((item) =>
-      mongoose.Types.ObjectId(item.studentId)
-    );
+    const ids = listScore.map((item) => mongoose.Types.ObjectId(item.createBy));
     let user = await User.find({ _id: { $in: ids } });
     listScore = listScore.map((item) => {
       item.createAvatar = user.find(
-        (u) => u._id.toString() === item.studentId.toString()
+        (u) => u._id.toString() === item.createBy.toString()
       ).avatar;
       item.createName = user.find(
-        (u) => u._id.toString() === item.studentId.toString()
+        (u) => u._id.toString() === item.createBy.toString()
       ).name;
       return item;
     });
