@@ -106,10 +106,7 @@ const updateScore = async (req, res) => {
 
 const getListScore = async (req, res) => {
   try {
-    const features = new APIfeatures(
-      Score.find({ createBy: req.user._id }),
-      req.query
-    )
+    const features = new APIfeatures(Score.find(), req.query)
       .filtering()
       .sorting()
       .paginating();
