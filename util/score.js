@@ -114,7 +114,7 @@ const getListScore = async (req, res) => {
       .sorting()
       .paginating();
 
-    const listScore = await features.query;
+    let listScore = await features.query;
     const ids = listScore.map((item) => mongoose.Types.ObjectId(item.createBy));
     let user = await User.find({ _id: { $in: ids } });
     listScore = listScore.map((item) => {
