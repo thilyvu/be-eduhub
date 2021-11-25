@@ -66,6 +66,9 @@ const ExerciseSchema = new Schema(
       type: String,
       default: null,
     },
+    exerciseName: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
