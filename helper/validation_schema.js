@@ -24,6 +24,7 @@ const userUpdateSchema = Joi.object().keys({
   phone: Joi.string(),
   avatar: Joi.string(),
   name: Joi.string(),
+  role: Joi.string(),
 });
 const userTokenSchema = Joi.object().keys({
   refreshToken: Joi.string(),

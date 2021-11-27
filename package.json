@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start" : "node server.js",
     "server": "nodemon server.js --ignore 'engweb/'",
     "client": "npm run serve --prefix ../engweb",
     "dev": "concurrently \"npm run server\" \"npm run client\""
