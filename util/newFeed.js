@@ -175,7 +175,7 @@ const deleteNewFeed = async (req, res) => {
     const newFeed = await NewFeed.findById(req.params.id);
     if (!newFeed) {
       return res.status(404).json({
-        message: "NewFeed not found. Invalid id of calendar",
+        message: "NewFeed not found. Invalid id of newFeed",
         success: false,
       });
     }
