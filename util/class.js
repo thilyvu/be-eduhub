@@ -41,7 +41,7 @@ class APIfeatures {
 
   paginating() {
     const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 9;
+    const limit = this.queryString.limit * 1 || 20;
     const skip = (page - 1) * limit;
     this.query = this.query.skip(skip).limit(limit);
     return this;
@@ -286,6 +286,7 @@ const approveToClass = async (req, res) => {
     const result = await addToClassSchema.validateAsync(req.body);
     const studentId = result.studentId;
     const classId = result.classId;
+
     const student = await User.findById(
       mongoose.Types.ObjectId(studentId)
     ).select(["-classes", "-password", "-role", "-username"]);
@@ -295,7 +296,6 @@ const approveToClass = async (req, res) => {
         success: true,
       });
     }
-
     const oldClass = await Class.findById(mongoose.Types.ObjectId(classId));
     oldClass.students.forEach((student) => {
       if (student._id.toString() === studentId.toString()) {
@@ -314,10 +314,10 @@ const approveToClass = async (req, res) => {
       }
     );
     // remove student out of awaitstudents list
-    await Class.findOneAndUpdate(
+    const removedStudent = await Class.findOneAndUpdate(
       { _id: mongoose.Types.ObjectId(classId) },
       {
-        $pull: { awaitStudents: student },
+        $pull: { awaitStudents: { _id: mongoose.Types.ObjectId(student._id) } },
         $set: { updateBy: req.user._id },
       }
     );
