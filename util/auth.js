@@ -218,7 +218,9 @@ const userLogin = async (userCreds, role, res) => {
         username: user.username,
         role: user.role,
         id: user._id,
-        avatar: user.avatar,
+        avatar: user.avatar
+          ? user.avatar
+          : "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-portrait-176256935.jpg?fbclid=IwAR3w7x7XV6ZIro07OzoQPBIpEI2yGu1451we09GJ4_u4ZMS8SiLVcrtlkr0",
         email: user.email,
         token: `Bearer ${token}`,
         refreshToken: `Bearer ${refreshToken}`,
