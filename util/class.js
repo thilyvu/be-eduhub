@@ -628,7 +628,6 @@ const getClassById = async (req, res) => {
       "-calendars",
       "-fileFolder",
       "-exercise",
-      "-classCode",
     ]);
     listClass.lectures = listClass.lectures.sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
