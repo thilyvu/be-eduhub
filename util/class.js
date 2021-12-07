@@ -18,13 +18,28 @@ class APIfeatures {
     const queryObj = { ...this.queryString }; //queryString = req.query
     const excludedFields = ["page", "sort", "limit"];
     excludedFields.forEach((el) => delete queryObj[el]);
-
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(
       /\b(gte|gt|lt|lte|regex)\b/g,
       (match) => "$" + match
     );
-    this.query.find(JSON.parse(queryStr));
+
+    queryStr = JSON.parse(queryStr);
+    // Object.values(queryObj).forEach((item) => {
+    //   if (Object.keys(item) == "regex") {
+    //     let re = new RegExp(Object.values(item), "i");
+    //     // queryStr = re;
+    //   }
+    // });
+    for (const [key, value] of Object.entries(queryObj)) {
+      if (Object.keys(value) == "regex") {
+        let re = new RegExp(Object.values(value), "i");
+        queryStr[key] = {
+          $regex: re,
+        };
+      }
+    }
+    this.query.find(queryStr);
     return this;
   }
   sorting() {

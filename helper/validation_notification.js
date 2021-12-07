@@ -1,20 +1,18 @@
-const Joi = require('joi')
+const Joi = require("joi");
 
 const notificationCreateSchema = Joi.object().keys({
-  title :Joi.string().trim().required(),
-  content: Joi.required(),
-  type: Joi.required(),
-  userId :Joi.string().trim().required(),
-})
+  title: Joi.string().trim().required(),
+  content: Joi.string(),
+  type: Joi.string(),
+  userId: Joi.string().trim().required(),
+});
 
 const notificationUpdateSchema = Joi.object().keys({
-  email :Joi.string().trim().email().required(),
   content: Joi.string().required(),
   type: Joi.required(),
-  userId :Joi.string().trim().required(),
-
-})
-module.exports= { 
-    notificationCreateSchema,
-    notificationUpdateSchema
-}
+  userId: Joi.string().trim().required(),
+});
+module.exports = {
+  notificationCreateSchema,
+  notificationUpdateSchema,
+};
