@@ -192,95 +192,110 @@ const joinClass = async (req, res) => {
     const student = await User.findById(req.user._id).select([
       "-classes",
       "-password",
-      "-role",
       "-username",
     ]);
-
-    if (!oldClass.approveMode) {
-      oldClass.students.forEach((student) => {
-        if (student._id.toString() === req.user._id.toString()) {
-          return res.status(400).json({
-            message: "Already in this class",
-            success: false,
-          });
-        }
-      });
-      const addedStudentToClass = await Class.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          $push: { students: student },
-          $set: { updateBy: req.user._id },
-        }
-      );
-      const updatedClass = await Object.assign(oldClass, addedStudentToClass);
-      if (!updatedClass) return null;
-
-      const updateClassForUser = await updatedClass.save();
-      const ClassId = oldClass._id;
-      oldClass.students.forEach(async (student) => {
-        await User.findOneAndUpdate(
-          { _id: student._id, "classes._id": ClassId },
-          {
-            $set: {
-              "classes.$": updateClassForUser,
-            },
-          }
-        );
-      });
-      // add class to student profile
-      await User.findOneAndUpdate(
-        { _id: req.user._id },
-        {
-          $push: { classes: updateClassForUser },
-        }
-      );
-      return res.status(201).json({
-        message: "Class update successful ",
-        success: true,
-        data: updateClassForUser,
+    if (student.role == "teacher") {
+      return res.status(400).json({
+        message: "Invalid role, teacher are not allow to join",
+        success: false,
       });
     } else {
-      oldClass.awaitStudents.forEach((student) => {
-        if (student._id.toString() === req.user._id.toString()) {
-          return res.status(400).json({
-            message: "Already send request to join this class",
-            success: false,
+      let isExisted = false;
+      if (!oldClass.approveMode) {
+        oldClass.students.forEach((student) => {
+          if (student._id.toString() === req.user._id.toString()) {
+            isExisted = true;
+            return res.status(400).json({
+              message: "Already in this class",
+              success: false,
+            });
+          }
+        });
+        if (!isExisted) {
+          const addedStudentToClass = await Class.findOneAndUpdate(
+            { _id: req.params.id },
+            {
+              $push: { students: student },
+              $set: { updateBy: req.user._id },
+            }
+          );
+          const updatedClass = await Object.assign(
+            oldClass,
+            addedStudentToClass
+          );
+          if (!updatedClass) return null;
+
+          const updateClassForUser = await updatedClass.save();
+          const ClassId = oldClass._id;
+          oldClass.students.forEach(async (student) => {
+            await User.findOneAndUpdate(
+              { _id: student._id, "classes._id": ClassId },
+              {
+                $set: {
+                  "classes.$": updateClassForUser,
+                },
+              }
+            );
+          });
+          // add class to student profile
+          await User.findOneAndUpdate(
+            { _id: req.user._id },
+            {
+              $push: { classes: updateClassForUser },
+            }
+          );
+          return res.status(201).json({
+            message: "Class update successful ",
+            success: true,
+            data: updateClassForUser,
           });
         }
-      });
-      const addedStudentToClassWithApprove = await Class.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          $push: { awaitStudents: student },
-          $set: { updateBy: req.user._id },
-        }
-      );
-      const updatedClass = await Object.assign(
-        oldClass,
-        addedStudentToClassWithApprove
-      );
-      if (!updatedClass) return null;
-
-      const ClassId = oldClass._id;
-      const updateClassForUserWith = await updatedClass.save();
-
-      oldClass.students.forEach(async (student) => {
-        await User.findOneAndUpdate(
-          { _id: student._id, "classes._id": ClassId },
-          {
-            $set: {
-              "classes.$": updateClassForUserWith,
-            },
+      } else {
+        oldClass.awaitStudents.forEach((student) => {
+          if (student._id.toString() === req.user._id.toString()) {
+            isExisted = true;
+            return res.status(400).json({
+              message: "Already send request to join this class",
+              success: false,
+            });
           }
-        );
-      });
-      // update class in user profile
+        });
+        if (!isExisted) {
+          const addedStudentToClassWithApprove = await Class.findOneAndUpdate(
+            { _id: req.params.id },
+            {
+              $push: { awaitStudents: student },
+              $set: { updateBy: req.user._id },
+            }
+          );
+          const updatedClass = await Object.assign(
+            oldClass,
+            addedStudentToClassWithApprove
+          );
+          if (!updatedClass) return null;
 
-      return res.status(201).json({
-        message: "Join class successful ",
-        success: true,
-        data: updateClassForUserWith,
-      });
+          const ClassId = oldClass._id;
+          const updateClassForUserWith = await updatedClass.save();
+
+          oldClass.students.forEach(async (student) => {
+            await User.findOneAndUpdate(
+              { _id: student._id, "classes._id": ClassId },
+              {
+                $set: {
+                  "classes.$": updateClassForUserWith,
+                },
+              }
+            );
+          });
+          // update class in user profile
+
+          return res.status(201).json({
+            message: "Join class successful ",
+            success: true,
+            data: updateClassForUserWith,
+          });
+        }
+      }
     }
   } catch (err) {
     if (err.isJoi === true) {
@@ -301,67 +316,94 @@ const approveToClass = async (req, res) => {
     const result = await addToClassSchema.validateAsync(req.body);
     const studentId = result.studentId;
     const classId = result.classId;
-
-    const student = await User.findById(
-      mongoose.Types.ObjectId(studentId)
-    ).select(["-classes", "-password", "-role", "-username"]);
-    if (!student) {
+    const oldClass = await Class.findById(mongoose.Types.ObjectId(classId));
+    if (req.user._id.toString() !== oldClass.createBy.toString()) {
       return res.status(404).json({
-        message: "Student id invalid ",
+        message: "You dont have permission to approve student to this class ",
         success: true,
       });
-    }
-    const oldClass = await Class.findById(mongoose.Types.ObjectId(classId));
-    oldClass.students.forEach((student) => {
-      if (student._id.toString() === studentId.toString()) {
-        return res.status(400).json({
-          message: "Already in this class",
-          success: false,
+    } else {
+      const student = await User.findById(
+        mongoose.Types.ObjectId(studentId)
+      ).select(["-classes", "-password", "-username"]);
+      if (!student) {
+        return res.status(404).json({
+          message: "Student id invalid ",
+          success: true,
         });
-      }
-    });
-    // add student to list student
-    const addedStudentToClass = await Class.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(classId) },
-      {
-        $push: { students: student },
-        $set: { updateBy: req.user._id },
-      }
-    );
-    // remove student out of awaitstudents list
-    const removedStudent = await Class.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(classId) },
-      {
-        $pull: { awaitStudents: { _id: mongoose.Types.ObjectId(student._id) } },
-        $set: { updateBy: req.user._id },
-      }
-    );
-    const updatedClass = await Object.assign(oldClass, addedStudentToClass);
-    if (!updatedClass) return null;
-    // add class to student
-    await User.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(studentId) },
-      {
-        $push: { classes: updatedClass },
-      }
-    );
+      } else {
+        if (student.role == "teacher") {
+          return res.status(400).json({
+            message: "Invalid role, teacher are not allow to join",
+            success: false,
+          });
+        } else {
+          let isExisted = false;
 
-    const updateClassForUser = await updatedClass.save();
+          oldClass.students.forEach((student) => {
+            if (student._id.toString() === studentId.toString()) {
+              isExisted = true;
+              return res.status(400).json({
+                message: "Already in this class",
+                success: false,
+              });
+            }
+          });
+          if (!isExisted) {
+            // add student to list student
+            const addedStudentToClass = await Class.findOneAndUpdate(
+              { _id: mongoose.Types.ObjectId(classId) },
+              {
+                $push: { students: student },
+                $set: { updateBy: req.user._id },
+              }
+            );
+            // remove student out of awaitstudents list
+            const removedStudent = await Class.findOneAndUpdate(
+              { _id: mongoose.Types.ObjectId(classId) },
+              {
+                $pull: {
+                  awaitStudents: { _id: mongoose.Types.ObjectId(student._id) },
+                },
+                $set: { updateBy: req.user._id },
+              }
+            );
+            const updatedClass = await Object.assign(
+              oldClass,
+              addedStudentToClass
+            );
+            if (!updatedClass) return null;
+            // add class to student
+            await User.findOneAndUpdate(
+              { _id: mongoose.Types.ObjectId(studentId) },
+              {
+                $push: { classes: updatedClass },
+              }
+            );
 
-    oldClass.students.forEach(async (student) => {
-      await User.findOneAndUpdate(
-        { _id: student._id, "classes._id": mongoose.Types.ObjectId(classId) },
-        {
-          $set: {
-            "classes.$": updateClassForUser,
-          },
+            const updateClassForUser = await updatedClass.save();
+
+            oldClass.students.forEach(async (student) => {
+              await User.findOneAndUpdate(
+                {
+                  _id: student._id,
+                  "classes._id": mongoose.Types.ObjectId(classId),
+                },
+                {
+                  $set: {
+                    "classes.$": updateClassForUser,
+                  },
+                }
+              );
+            });
+            return res.status(201).json({
+              message: "Student approved to class ",
+              success: true,
+            });
+          }
         }
-      );
-    });
-    return res.status(201).json({
-      message: "Student approved to class ",
-      success: true,
-    });
+      }
+    }
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({
@@ -384,82 +426,89 @@ const addStudentToClass = async (req, res) => {
     const phone = result.phone;
     const classId = result.classId;
     let student;
-    console.log(email, phone);
     if (email) {
       student = await User.findOne({ email: email }).select([
         "-classes",
         "-password",
-        "-role",
         "-username",
       ]);
     } else {
       student = await User.findOne({ phone: phone }).select([
         "-classes",
         "-password",
-        "-role",
         "-username",
       ]);
     }
-    console.log(phone);
     if (!student) {
       return res.status(404).json({
         message: "Invalid student",
         success: false,
       });
-    }
-    const studentId = student.id;
-
-    const oldClass = await Class.findById(mongoose.Types.ObjectId(classId));
-    oldClass.students.forEach((student) => {
-      if (student._id.toString() === studentId.toString()) {
+    } else {
+      if (student.role == "teacher") {
         return res.status(400).json({
-          message: "Already in this class",
+          message: "Invalid role, teacher are not allow to join",
           success: false,
         });
-      }
-    });
-    // add student to list student
-    const addedStudentToClass = await Class.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(classId) },
-      {
-        $push: { students: student },
-        $set: { updateBy: req.user._id },
-      }
-    );
-    // remove student out of awaitstudents list
-    // await Class.findOneAndUpdate(
-    //   { _id: mongoose.Types.ObjectId(classId) },
-    //   {
-    //     $pull: { awaitStudents: student },
-    //     $set: { updateBy: req.user._id },
-    //   }
-    // );
-    const updatedClass = await Object.assign(oldClass, addedStudentToClass);
-    if (!updatedClass) return null;
-    // add class to student
-    await User.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(studentId) },
-      {
-        $push: { classes: updatedClass },
-      }
-    );
+      } else {
+        const studentId = student.id;
 
-    const updateClassForUser = await updatedClass.save();
-    // update class to old student to list student
-    oldClass.students.forEach(async (student) => {
-      await User.findOneAndUpdate(
-        { _id: student._id, "classes._id": mongoose.Types.ObjectId(classId) },
-        {
-          $set: {
-            "classes.$": updateClassForUser,
-          },
-        }
-      );
-    });
-    return res.status(201).json({
-      message: "Student approved to class ",
-      success: true,
-    });
+        const oldClass = await Class.findById(mongoose.Types.ObjectId(classId));
+        oldClass.students.forEach((student) => {
+          if (student._id.toString() === studentId.toString()) {
+            return res.status(400).json({
+              message: "Already in this class",
+              success: false,
+            });
+          }
+        });
+        // add student to list student
+        const addedStudentToClass = await Class.findOneAndUpdate(
+          { _id: mongoose.Types.ObjectId(classId) },
+          {
+            $push: { students: student },
+            $set: { updateBy: req.user._id },
+          }
+        );
+        // remove student out of awaitstudents list
+        await Class.findOneAndUpdate(
+          { _id: mongoose.Types.ObjectId(classId) },
+          {
+            $pull: { awaitStudents: student },
+            $set: { updateBy: req.user._id },
+          }
+        );
+        const updatedClass = await Object.assign(oldClass, addedStudentToClass);
+        if (!updatedClass) return null;
+        // add class to student
+        await User.findOneAndUpdate(
+          { _id: mongoose.Types.ObjectId(studentId) },
+          {
+            $push: { classes: updatedClass },
+          }
+        );
+
+        const updateClassForUser = await updatedClass.save();
+        // update class to old student to list student
+        oldClass.students.forEach(async (student) => {
+          await User.findOneAndUpdate(
+            {
+              _id: student._id,
+              "classes._id": mongoose.Types.ObjectId(classId),
+            },
+            {
+              $set: {
+                "classes.$": updateClassForUser,
+              },
+            }
+          );
+        });
+        return res.status(201).json({
+          message: "Student added to class ",
+          success: true,
+        });
+      }
+    }
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({
@@ -528,47 +577,61 @@ const getListClassByStudentId = async (req, res) => {
 const leaveClass = async (req, res) => {
   try {
     const oldClass = await Class.findById(req.params.id);
-    const removedStudentOutOfClass = await Class.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        $pull: { students: { _id: req.user._id } },
-        $set: { updateBy: req.user._id },
+    const studentId = req.user._id;
+    let isExisted = false;
+    oldClass.students.forEach((student) => {
+      if (student._id.toString() === studentId.toString()) {
+        isExisted = true;
       }
-    );
-    const updatedClass = await Object.assign(
-      oldClass,
-      removedStudentOutOfClass
-    );
+    });
+    if (isExisted) {
+      const removedStudentOutOfClass = await Class.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $pull: { students: { _id: req.user._id } },
+          $set: { updateBy: req.user._id },
+        }
+      );
+      const updatedClass = await Object.assign(
+        oldClass,
+        removedStudentOutOfClass
+      );
 
-    const updateClassForUser = await updatedClass.save();
+      const updateClassForUser = await updatedClass.save();
 
-    /// updateClassForUser need filter remove list student && await + data excercise + document
-    if (!updateClassForUser) return null;
-    const ClassId = oldClass._id;
+      /// updateClassForUser need filter remove list student && await + data excercise + document
+      if (!updateClassForUser) return null;
+      const ClassId = oldClass._id;
 
-    oldClass.students.forEach(async (student) => {
+      oldClass.students.forEach(async (student) => {
+        await User.findOneAndUpdate(
+          { _id: student._id, "classes._id": ClassId },
+          {
+            $set: {
+              "classes.$": updateClassForUser,
+            },
+          }
+        );
+      });
+      // delete class out of curent user
       await User.findOneAndUpdate(
-        { _id: student._id, "classes._id": ClassId },
+        { _id: req.user._id, "classes._id": ClassId },
         {
           $set: {
             "classes.$": updateClassForUser,
           },
         }
       );
-    });
-    // delete class out of curent user
-    await User.findOneAndUpdate(
-      { _id: req.user._id, "classes._id": ClassId },
-      {
-        $set: {
-          "classes.$": updateClassForUser,
-        },
-      }
-    );
-    return res.status(201).json({
-      message: "Class update successful ",
-      success: true,
-    });
+      return res.status(201).json({
+        message: "Leave class successful ",
+        success: true,
+      });
+    } else {
+      return res.status(400).json({
+        message: "Not in this class",
+        success: false,
+      });
+    }
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({
