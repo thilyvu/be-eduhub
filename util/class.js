@@ -696,7 +696,9 @@ const getClassById = async (req, res) => {
 const getClassByClassCode = async (req, res) => {
   try {
     const classCodeNeedToFind = req.params.classCode;
-    const classFinded = await Class.findOne({ classCode: classCodeNeedToFind });
+    const classFinded = await Class.findOne({
+      classCode: { $regex: new RegExp(classCodeNeedToFind, "i") },
+    });
     if (!classFinded)
       return res.status(400).json({ msg: "Class does not exist." });
 
