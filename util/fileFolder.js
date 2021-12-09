@@ -1,6 +1,8 @@
 const FileFolder = require("../models/fileFolder");
 const User = require("../models/users");
+const Class = require("../models/class");
 const Mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 const {
   fileRegisterSchema,
   fileUpdateSchema,
@@ -124,6 +126,17 @@ const createFile = async (req, res) => {
         createBy: req.user._id,
       });
       newFileAdded = await newFile.save();
+      const oldClass = await Class.findById(Mongoose.Types.ObjectId(classId));
+      oldClass.students.forEach(async (student) => {
+        const newNotification = new Notification({
+          title: "Thêm tài liệu ",
+          type: "create",
+          content: `Giáo viên vừa thêm 1 file ở ${oldClass.name}`,
+          userId: student._id,
+          metadata: { ClassId: classId },
+        });
+        await newNotification.save();
+      });
     } else {
       const newFile = new FileFolder({
         ...result,
@@ -221,6 +234,17 @@ const createFolder = async (req, res) => {
         createBy: req.user._id,
       });
       newFolderAdded = await newFile.save();
+      const oldClass = await Class.findById(Mongoose.Types.ObjectId(classId));
+      oldClass.students.forEach(async (student) => {
+        const newNotification = new Notification({
+          title: "Thêm tài liệu ",
+          type: "create",
+          content: `Giáo viên vừa tạo 1 thư mục ở ${oldClass.name}`,
+          userId: student._id,
+          metadata: { ClassId: classId },
+        });
+        await newNotification.save();
+      });
     } else {
       const newFile = new FileFolder({
         ...result,

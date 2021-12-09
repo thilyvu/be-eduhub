@@ -2,6 +2,7 @@ const Comment = require("../models/comment");
 const NewFeed = require("../models/newFeeds");
 const Class = require("../models/class");
 const mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 const {
   commentCreateSchema,
   commentUpdateSchema,
@@ -68,6 +69,9 @@ const createComment = async (req, res) => {
         $set: { updateBy: req.user._id },
       }
     );
+    const oldNewFeed = await NewFeed.findById(
+      mongoose.Types.ObjectId(newFeedId)
+    );
     // console.log(await Class.findOne(
     //   {
     //     $and: [
@@ -93,6 +97,17 @@ const createComment = async (req, res) => {
         },
       }
     );
+    const newNotification = new Notification({
+      title: "Thêm tin bình luận mới ",
+      type: "create",
+      content: `${req.user.name} vừa thêm 1 bình luân mới`,
+      userId: oldNewFeed.createBy,
+      metadata: {
+        ClassId: addedNewFeed.classId,
+        newFeedId: result.newFeedId,
+      },
+    });
+    await newNotification.save();
     return res.status(201).json({
       message: "New comment create successful ",
       success: true,

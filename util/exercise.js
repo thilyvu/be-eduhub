@@ -1,4 +1,5 @@
 const Exercise = require("../models/exercise");
+const Notification = require("../models/notifications");
 const Class = require("../models/class");
 const {
   exerciseCreateSchema,
@@ -59,6 +60,9 @@ const createExercise = async (req, res) => {
       ...result,
       createBy: req.user._id,
     });
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(result.classId)
+    );
     let exerciseNameNotTaken = await exerciseNameValidation(
       result.exerciseName
     );
@@ -70,6 +74,16 @@ const createExercise = async (req, res) => {
     }
     const { classId } = result;
     const newExerciseCreated = await newExecise.save();
+    oldClass.students.forEach(async (student) => {
+      const newNotification = new Notification({
+        title: "Thêm bài tập mới",
+        type: "update",
+        content: `Giáo viên vừa thêm bài tập ${result.exerciseName} mới ở ${oldClass.name}`,
+        userId: student._id,
+        metadata: { ClassId: result.classId },
+      });
+      await newNotification.save();
+    });
     return res.status(201).json({
       message: "New exercise create successful ",
       success: true,

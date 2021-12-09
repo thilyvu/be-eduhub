@@ -1,6 +1,7 @@
 const Class = require("../models/class");
 const User = require("../models/users");
 const mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 const FileFolder = require("../models/fileFolder");
 const {
   classCreateSchema,
@@ -155,6 +156,17 @@ const updateClass = async (req, res) => {
     };
     const updatedClass = await Object.assign(oldClass, updateClass);
     if (!updatedClass) return null;
+    oldClass.students.forEach(async (student) => {
+      const newNotification = new Notification({
+        title: "Cập nhật thông tin lớp học",
+        type: "update",
+        content: `Giáo viên ${req.user.name} vừa cập nhật thông tin lớp học`,
+        userId: student._id,
+        metadata: { ClassId: req.params.id },
+      });
+      await newNotification.save();
+    });
+
     await updatedClass.save();
     const ClassId = updatedClass._id;
     // updatedClass.students.forEach()
@@ -237,6 +249,24 @@ const joinClass = async (req, res) => {
               }
             );
           });
+          oldClass.students.forEach(async (student) => {
+            const newNotification = new Notification({
+              title: "Tham gia lớp học",
+              type: "create",
+              content: `Học sinh ${req.user.name} vừa tham gia ${oldClass.name}`,
+              userId: student._id,
+              metadata: { ClassId: req.params.id },
+            });
+            await newNotification.save();
+          });
+          const newNotification = new Notification({
+            title: "Tham gia lớp học",
+            type: "create",
+            content: `Học sinh ${req.user.name} vừa tham gia ${oldClass.name} của bạn`,
+            userId: oldClass.createBy,
+            metadata: { ClassId: req.params.id },
+          });
+          await newNotification.save();
           // add class to student profile
           await User.findOneAndUpdate(
             { _id: req.user._id },
@@ -245,7 +275,7 @@ const joinClass = async (req, res) => {
             }
           );
           return res.status(201).json({
-            message: "Class update successful ",
+            message: "Join class successful ",
             success: true,
             data: updateClassForUser,
           });
@@ -288,9 +318,16 @@ const joinClass = async (req, res) => {
             );
           });
           // update class in user profile
-
+          const newNotification = new Notification({
+            title: "Yêu cầu tham gia lớp học",
+            type: "create",
+            content: `Học sinh ${req.user.name} vừa gửi yêu cầu tham gia ${oldClass.name} của bạn`,
+            userId: oldClass.createBy,
+            metadata: { ClassId: req.params.id },
+          });
+          await newNotification.save();
           return res.status(201).json({
-            message: "Join class successful ",
+            message: "Send request to class successful ",
             success: true,
             data: updateClassForUserWith,
           });
@@ -349,7 +386,18 @@ const approveToClass = async (req, res) => {
               });
             }
           });
+
           if (!isExisted) {
+            oldClass.students.forEach(async (stu) => {
+              const newNotification = new Notification({
+                title: "Cập nhật thông tin lớp học",
+                type: "update",
+                content: `Học sinh ${student.name} vừa được duyệt vào ${oldClass.name}`,
+                userId: stu._id,
+                metadata: { ClassId: result.classId },
+              });
+              await newNotification.save();
+            });
             // add student to list student
             const addedStudentToClass = await Class.findOneAndUpdate(
               { _id: mongoose.Types.ObjectId(classId) },
@@ -358,6 +406,14 @@ const approveToClass = async (req, res) => {
                 $set: { updateBy: req.user._id },
               }
             );
+            const newNotification = new Notification({
+              title: "Duyệt yêu cầu tham gia lớp học",
+              type: "update",
+              content: `Chúc mừng bạn vừa được duyệt vào ${oldClass.name}`,
+              userId: student._id,
+              metadata: { ClassId: result.classId },
+            });
+            await newNotification.save();
             // remove student out of awaitstudents list
             const removedStudent = await Class.findOneAndUpdate(
               { _id: mongoose.Types.ObjectId(classId) },
@@ -368,6 +424,7 @@ const approveToClass = async (req, res) => {
                 $set: { updateBy: req.user._id },
               }
             );
+
             const updatedClass = await Object.assign(
               oldClass,
               addedStudentToClass
@@ -462,6 +519,24 @@ const addStudentToClass = async (req, res) => {
             });
           }
         });
+        oldClass.students.forEach(async (stu) => {
+          const newNotification = new Notification({
+            title: "Thêm học sinh vào lớp học",
+            type: "update",
+            content: `Học sinh ${student.name} vừa được thêm vào ${oldClass.name}`,
+            userId: stu._id,
+            metadata: { ClassId: result.classId },
+          });
+          await newNotification.save();
+        });
+        const newNotification = new Notification({
+          title: "Thêm vào lớp học",
+          type: "update",
+          content: `Chúc mừng vừa được thêm vào  ${oldClass.name}`,
+          userId: student._id,
+          metadata: { ClassId: result.classId },
+        });
+        await newNotification.save();
         // add student to list student
         const addedStudentToClass = await Class.findOneAndUpdate(
           { _id: mongoose.Types.ObjectId(classId) },
@@ -596,7 +671,16 @@ const leaveClass = async (req, res) => {
         oldClass,
         removedStudentOutOfClass
       );
-
+      oldClass.students.forEach(async (student) => {
+        const newNotification = new Notification({
+          title: "Rời lớp học",
+          type: "update",
+          content: `Học sinh ${req.user.name} vừa rời khỏi ${oldClass.name}`,
+          userId: student._id,
+          metadata: { ClassId: req.params.id },
+        });
+        await newNotification.save();
+      });
       const updateClassForUser = await updatedClass.save();
 
       /// updateClassForUser need filter remove list student && await + data excercise + document

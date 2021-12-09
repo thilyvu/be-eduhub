@@ -4,6 +4,8 @@ const {
   lectureCreateSchema,
   lectureUpdateSchema,
 } = require("../helper/validation_lecture");
+const mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 class APIfeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -57,6 +59,9 @@ const createLecture = async (req, res) => {
       createBy: req.user._id,
     });
     const { classId } = result;
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(result.classId)
+    );
     // const lectureNameNotTaken = await lectureNameValidation(result.name);
     // if (!lectureNameNotTaken) {
     // return res.status(400).json({
@@ -64,6 +69,16 @@ const createLecture = async (req, res) => {
     //     success: false,
     // });
     // }
+    oldClass.students.forEach(async (student) => {
+      const newNotification = new Notification({
+        title: "Thêm bài giảng mới ",
+        type: "create",
+        content: `Giáo viên vừa thêm giảng ${result.name} mới ở ${oldClass.name}`,
+        userId: student._id,
+        metadata: { ClassId: result.classId },
+      });
+      await newNotification.save();
+    });
     const newLectureCreated = await newLecture.save();
     const addedClass = await Class.findOneAndUpdate(
       { _id: classId },

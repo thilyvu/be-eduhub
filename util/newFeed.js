@@ -1,5 +1,7 @@
 const NewFeed = require("../models/newFeeds");
 const Class = require("../models/class");
+const mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 const {
   newFeedCreateSchema,
   newFeedUpdateSchema,
@@ -54,9 +56,22 @@ const createNewFeed = async (req, res) => {
   try {
     const result = await newFeedCreateSchema.validateAsync(req.body);
     const { classId } = result;
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(result.classId)
+    );
     const newFeedCreate = new NewFeed({
       ...result,
       createBy: req.user._id,
+    });
+    oldClass.students.forEach(async (student) => {
+      const newNotification = new Notification({
+        title: "Thêm tin tức mới ",
+        type: "create",
+        content: `${req.user.name} vừa tạo 1 tin tức mới ở ${oldClass.name}`,
+        userId: student._id,
+        metadata: { ClassId: result.classId },
+      });
+      await newNotification.save();
     });
     const newFeedCreated = await newFeedCreate.save();
 

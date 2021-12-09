@@ -18,7 +18,7 @@ const NotificationSchema = new Schema(
       type: String,
     },
     metadata: {
-      type: Array,
+      type: Object,
       default: [],
     },
   },

@@ -54,7 +54,6 @@ const createNotification = async (req, res) => {
     // create new user
     const newNotification = new Notification({
       ...result,
-      createBy: req.user._id,
     });
     await newNotification.save();
     return res.status(201).json({
@@ -138,6 +137,37 @@ const getListNotification = async (req, res) => {
     });
   }
 };
+const getListPersonalNotification = async (req, res) => {
+  try {
+    console.log(req.user);
+    const features = new APIfeatures(
+      Notification.find({ userId: req.user._id }),
+      req.query
+    )
+      .filtering()
+      .sorting()
+      .paginating();
+    const total = await Notification.countDocuments({});
+    const listNotification = await features.query;
+    return res.status(201).json({
+      message: "Get list personal notification successfully",
+      success: true,
+      data: listNotification,
+      total: total,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
 const deleteNotification = async (req, res) => {
   try {
     const notification = await Notification.findByPk(req.params.id);
@@ -164,4 +194,5 @@ module.exports = {
   updateNotification,
   deleteNotification,
   getListNotification,
+  getListPersonalNotification,
 };

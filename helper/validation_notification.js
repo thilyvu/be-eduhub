@@ -5,6 +5,7 @@ const notificationCreateSchema = Joi.object().keys({
   content: Joi.string(),
   type: Joi.string(),
   userId: Joi.string().trim().required(),
+  metadata: Joi.object(),
 });
 
 const notificationUpdateSchema = Joi.object().keys({

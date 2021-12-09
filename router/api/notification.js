@@ -5,14 +5,19 @@ const {
   updateNotification,
   deleteNotification,
   getListNotification,
+  getListPersonalNotification,
 } = require("../../util/notification");
 const router = Router();
 
-router.post("/notification", async (req, res) => {
+router.post("/notification", userAuth, async (req, res) => {
   await createNotification(req, res);
 });
-router.get("/notification", async (req, res) => {
+router.get("/notification", userAuth, async (req, res) => {
   await getListNotification(req, res);
+});
+
+router.get("/personalNotification", userAuth, async (req, res) => {
+  await getListPersonalNotification(req, res);
 });
 
 router.put("/notification/:id", userAuth, async (req, res) => {
