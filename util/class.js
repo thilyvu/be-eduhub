@@ -163,6 +163,7 @@ const updateClass = async (req, res) => {
         content: `Giáo viên ${req.user.name} vừa cập nhật thông tin lớp học`,
         userId: student._id,
         metadata: { ClassId: req.params.id },
+        bannerImg: oldClass.bannerImg,
       });
       await newNotification.save();
     });
@@ -256,6 +257,7 @@ const joinClass = async (req, res) => {
               content: `Học sinh ${req.user.name} vừa tham gia ${oldClass.name}`,
               userId: student._id,
               metadata: { ClassId: req.params.id },
+              bannerImg: oldClass.bannerImg,
             });
             await newNotification.save();
           });
@@ -265,6 +267,7 @@ const joinClass = async (req, res) => {
             content: `Học sinh ${req.user.name} vừa tham gia ${oldClass.name} của bạn`,
             userId: oldClass.createBy,
             metadata: { ClassId: req.params.id },
+            bannerImg: oldClass.bannerImg,
           });
           await newNotification.save();
           // add class to student profile
@@ -324,6 +327,7 @@ const joinClass = async (req, res) => {
             content: `Học sinh ${req.user.name} vừa gửi yêu cầu tham gia ${oldClass.name} của bạn`,
             userId: oldClass.createBy,
             metadata: { ClassId: req.params.id },
+            bannerImg: oldClass.bannerImg,
           });
           await newNotification.save();
           return res.status(201).json({
@@ -395,6 +399,7 @@ const approveToClass = async (req, res) => {
                 content: `Học sinh ${student.name} vừa được duyệt vào ${oldClass.name}`,
                 userId: stu._id,
                 metadata: { ClassId: result.classId },
+                bannerImg: oldClass.bannerImg,
               });
               await newNotification.save();
             });
@@ -412,6 +417,7 @@ const approveToClass = async (req, res) => {
               content: `Chúc mừng bạn vừa được duyệt vào ${oldClass.name}`,
               userId: student._id,
               metadata: { ClassId: result.classId },
+              bannerImg: oldClass.bannerImg,
             });
             await newNotification.save();
             // remove student out of awaitstudents list
@@ -526,6 +532,7 @@ const addStudentToClass = async (req, res) => {
             content: `Học sinh ${student.name} vừa được thêm vào ${oldClass.name}`,
             userId: stu._id,
             metadata: { ClassId: result.classId },
+            bannerImg: oldClass.bannerImg,
           });
           await newNotification.save();
         });
@@ -535,6 +542,7 @@ const addStudentToClass = async (req, res) => {
           content: `Chúc mừng vừa được thêm vào  ${oldClass.name}`,
           userId: student._id,
           metadata: { ClassId: result.classId },
+          bannerImg: oldClass.bannerImg,
         });
         await newNotification.save();
         // add student to list student
@@ -678,6 +686,7 @@ const leaveClass = async (req, res) => {
           content: `Học sinh ${req.user.name} vừa rời khỏi ${oldClass.name}`,
           userId: student._id,
           metadata: { ClassId: req.params.id },
+          bannerImg: oldClass.bannerImg,
         });
         await newNotification.save();
       });
@@ -919,6 +928,17 @@ const deleteClass = async (req, res) => {
       await User.findByIdAndUpdate(student._id, {
         $pull: { classes: { _id: classId } },
       });
+    });
+    deleteClass.students.forEach(async (student) => {
+      const newNotification = new Notification({
+        title: "Xóa lớp học",
+        type: "delete",
+        content: `${deleteClass.name} vừa bị xóa `,
+        userId: student._id,
+        metadata: { ClassId: req.params.id },
+        bannerImg: deleteClass.bannerImg,
+      });
+      await newNotification.save();
     });
     // delete class out of create user
     await User.findByIdAndUpdate(

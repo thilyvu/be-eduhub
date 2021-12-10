@@ -97,6 +97,9 @@ const createComment = async (req, res) => {
         },
       }
     );
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(addedNewFeed.classId)
+    );
     const newNotification = new Notification({
       title: "Thêm tin bình luận mới ",
       type: "create",
@@ -106,6 +109,7 @@ const createComment = async (req, res) => {
         ClassId: addedNewFeed.classId,
         newFeedId: result.newFeedId,
       },
+      bannerImg: oldClass.bannerImg,
     });
     await newNotification.save();
     return res.status(201).json({

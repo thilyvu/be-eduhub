@@ -134,6 +134,7 @@ const createFile = async (req, res) => {
           content: `Giáo viên vừa thêm 1 file ở ${oldClass.name}`,
           userId: student._id,
           metadata: { ClassId: classId },
+          bannerImg: oldClass.bannerImg,
         });
         await newNotification.save();
       });
@@ -242,6 +243,7 @@ const createFolder = async (req, res) => {
           content: `Giáo viên vừa tạo 1 thư mục ở ${oldClass.name}`,
           userId: student._id,
           metadata: { ClassId: classId },
+          bannerImg: oldClass.bannerImg,
         });
         await newNotification.save();
       });

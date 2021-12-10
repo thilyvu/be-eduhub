@@ -77,10 +77,11 @@ const createExercise = async (req, res) => {
     oldClass.students.forEach(async (student) => {
       const newNotification = new Notification({
         title: "Thêm bài tập mới",
-        type: "update",
+        type: "create",
         content: `Giáo viên vừa thêm bài tập ${result.exerciseName} mới ở ${oldClass.name}`,
         userId: student._id,
         metadata: { ClassId: result.classId },
+        bannerImg: oldClass.bannerImg,
       });
       await newNotification.save();
     });

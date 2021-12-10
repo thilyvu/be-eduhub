@@ -1,11 +1,13 @@
 const Score = require("../models/score");
 const User = require("../models/users");
 const Exercise = require("../models/exercise");
+const Class = require("../models/class");
+const mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 const {
   scoreCreateSchema,
   scoreUpdateSchema,
 } = require("../helper/validation_score");
-const mongoose = require("mongoose");
 class APIfeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -57,6 +59,25 @@ const createScore = async (req, res) => {
       ...result,
       createBy: req.user._id,
     });
+    const parentExercise = await Exercise.findById(
+      mongoose.Types.ObjectId(result.exerciseId)
+    );
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(parentExercise.classId)
+    );
+    const newNotification = new Notification({
+      title: "Nộp bài tập",
+      type: "create",
+      content: `Học sinh ${req.user.name} đã nộp bài cho bài tập ${parentExercise.exerciseName}`,
+      userId: oldClass.createBy,
+      metadata: {
+        ClassId: parentExercise.classId,
+        StudentId: req.user._id,
+        ExerciseId: result.exerciseId,
+      },
+      bannerImg: oldClass.bannerImg,
+    });
+    await newNotification.save();
     await newScore.save();
     return res.status(201).json({
       message: "New score create successful ",
@@ -82,8 +103,43 @@ const updateScore = async (req, res) => {
     const oldScore = await Score.findById(req.params.id);
     const updateScore = {
       ...result,
-      updateBy: req.user.id,
+      updateBy: req.user._id,
     };
+    const parentExercise = await Exercise.findById(
+      mongoose.Types.ObjectId(oldScore.exerciseId)
+    );
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(parentExercise.classId)
+    );
+    if (result.scores || result.comment) {
+      const newNotification = new Notification({
+        title: "Chấm bài nộp",
+        type: "create",
+        content: `Giáo viên ${req.user.name} đã chấm điểm cho bài ${parentExercise.exerciseName} của bạn`,
+        userId: oldScore.studentId,
+        metadata: {
+          ClassId: parentExercise.classId,
+          StudentId: req.user._id,
+          ExerciseId: result.exerciseId,
+        },
+        bannerImg: oldClass.bannerImg,
+      });
+      await newNotification.save();
+    } else {
+      const newNotification = new Notification({
+        title: "Cập nhật bài tập",
+        type: "update",
+        content: `Học sinh ${req.user.name} đã cập nhật bài nộp cho ${parentExercise.exerciseName}`,
+        userId: oldClass.createBy,
+        metadata: {
+          ClassId: parentExercise.classId,
+          StudentId: req.user._id,
+          ExerciseId: result.exerciseId,
+        },
+        bannerImg: oldClass.bannerImg,
+      });
+      await newNotification.save();
+    }
     const updatedScore = await Object.assign(oldScore, updateScore);
     if (!updatedScore) return null;
     await updatedScore.save();

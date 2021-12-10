@@ -17,6 +17,9 @@ const NotificationSchema = new Schema(
     userId: {
       type: String,
     },
+    bannerImg: {
+      type: String,
+    },
     metadata: {
       type: Object,
       default: [],

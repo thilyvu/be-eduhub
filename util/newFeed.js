@@ -70,6 +70,7 @@ const createNewFeed = async (req, res) => {
         content: `${req.user.name} vừa tạo 1 tin tức mới ở ${oldClass.name}`,
         userId: student._id,
         metadata: { ClassId: result.classId },
+        bannerImg: oldClass.bannerImg,
       });
       await newNotification.save();
     });

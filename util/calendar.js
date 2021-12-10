@@ -4,6 +4,9 @@ const {
   calendarUpdateSchema,
   calendarCreateClassSchema,
 } = require("../helper/validation_calendar");
+const Class = require("../models/class");
+const Mongoose = require("mongoose");
+const Notification = require("../models/notifications");
 class APIfeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -81,6 +84,20 @@ const createClassCalendar = async (req, res) => {
       ...result,
       createBy: req.user._id,
     });
+    const oldClass = await Class.findById(
+      mongoose.Types.ObjectId(result.classId)
+    );
+    oldClass.students.forEach(async (student) => {
+      const newNotification = new Notification({
+        title: "Thêm lịch học mới",
+        type: "create",
+        content: `Giáo viên vừa thêm lịch học mới ở ${oldClass.name}`,
+        userId: student._id,
+        metadata: { ClassId: result.classId },
+        bannerImg: oldClass.bannerImg,
+      });
+      await newNotification.save();
+    });
     await newCalendar.save();
     return res.status(201).json({
       message: "New class calendar create successful ",
@@ -116,6 +133,22 @@ const updateCalendar = async (req, res) => {
       ...result,
       updateBy: req.user.id,
     };
+    if (result.classId) {
+      const oldClass = await Class.findById(
+        mongoose.Types.ObjectId(result.classId)
+      );
+      oldClass.students.forEach(async (student) => {
+        const newNotification = new Notification({
+          title: "Cập nhật lịch học mới",
+          type: "Update",
+          content: `Giáo viên vừa cập nhật lịch học ở ${oldClass.name}`,
+          userId: student._id,
+          metadata: { ClassId: result.classId },
+          bannerImg: oldClass.bannerImg,
+        });
+        await newNotification.save();
+      });
+    }
     const updatedCalendar = await Object.assign(oldCalendar, updateCalendar);
     if (!updatedCalendar) return null;
     await updatedCalendar.save();

@@ -76,6 +76,7 @@ const createLecture = async (req, res) => {
         content: `Giáo viên vừa thêm giảng ${result.name} mới ở ${oldClass.name}`,
         userId: student._id,
         metadata: { ClassId: result.classId },
+        bannerImg: oldClass.bannerImg,
       });
       await newNotification.save();
     });
