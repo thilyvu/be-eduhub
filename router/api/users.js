@@ -55,6 +55,9 @@ router.get(
     await getListUser(req, res);
   }
 );
+router.get("/getUserByEmail/:email", async (req, res) => {
+  await getUserByEmail(req, res);
+});
 router.get(
   "/getUser/:id",
   userAuth,
