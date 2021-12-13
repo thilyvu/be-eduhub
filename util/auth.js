@@ -396,9 +396,9 @@ const getUserById = async (req, userId, res) => {
 
 const getUserByEmail = async (req, res) => {
   try {
-    console.log(req.query.email);
-    const { email } = req.query.email;
-    const user = await User.findOne({ email: email }).select("-password");
+    const user = await User.findOne({ email: req.params.email }).select(
+      "-password"
+    );
     if (!user) return res.status(400).json({ msg: "User does not exist." });
 
     res.json({
