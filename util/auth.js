@@ -97,7 +97,7 @@ const userRegister = async (userDets, role, res) => {
       service: "gmail",
       auth: {
         user: "eduhub12341@gmail.com",
-        pass: "eduhub1211@",
+        pass: "gxeofgwhxawihefr",
       },
       tls: {
         rejectUnauthorized: false,
@@ -823,6 +823,16 @@ const getUserByEmail = async (req, res) => {
           emailCode: verifyCode,
         }
       );
+      var transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "eduhub12341@gmail.com",
+          pass: "gxeofgwhxawihefr",
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
       var mailOptions = {
         from: "eduhub12341@gmail.com",
         to: `${email}`,
