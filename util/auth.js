@@ -335,34 +335,35 @@ const verifyCode = async (req, res) => {
   }
 };
 const resendEmailVerifiedCode = async (req, res) => {
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "eduhub12341@gmail.com",
-      pass: "eduhub1211@",
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-  const verifyCode = Math.floor(Math.random() * 900000) + 100000;
-  const email = req.params.email;
-  const user = await User.findOne({ email: req.params.email }).select(
-    "-password"
-  );
-  if (!user) return res.status(400).json({ msg: "User does not exist." });
-  else {
-    await User.findOneAndUpdate(
-      { email: req.params.email },
-      {
-        emailCode: verifyCode,
-      }
+  try {
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "eduhub12341@gmail.com",
+        pass: "eduhub1211@",
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    const verifyCode = Math.floor(Math.random() * 900000) + 100000;
+    const email = req.params.email;
+    const user = await User.findOne({ email: req.params.email }).select(
+      "-password"
     );
-    var mailOptions = {
-      from: "eduhub12341@gmail.com",
-      to: `${email}`,
-      subject: "Verify email for eduhub account",
-      html: `<head>
+    if (!user) return res.status(400).json({ msg: "User does not exist." });
+    else {
+      await User.findOneAndUpdate(
+        { email: req.params.email },
+        {
+          emailCode: verifyCode,
+        }
+      );
+      var mailOptions = {
+        from: "eduhub12341@gmail.com",
+        to: `${email}`,
+        subject: "Verify email for eduhub account",
+        html: `<head>
       <title></title>
       <!--[if !mso]><!-- -->
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -508,22 +509,34 @@ const resendEmailVerifiedCode = async (req, res) => {
           <![endif]--></div>
     
     </body>`,
-    };
+      };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.log(error);
-        return res.status(201).json({
-          message: error,
-          success: false,
-        });
-      } else {
-        console.log("Email sent: " + info.response);
-        return res.status(201).json({
-          message: "Email sent to user",
-          success: true,
-        });
-      }
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+          return res.status(201).json({
+            message: error,
+            success: false,
+          });
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(201).json({
+            message: "Email sent to user",
+            success: true,
+          });
+        }
+      });
+    }
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
     });
   }
 };
