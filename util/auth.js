@@ -97,10 +97,7 @@ const userRegister = async (userDets, role, res) => {
       service: "gmail",
       auth: {
         user: "eduhub12341@gmail.com",
-        pass: "gxeofgwhxawihefr",
-      },
-      tls: {
-        rejectUnauthorized: false,
+        pass: "aololuhhycykynde",
       },
     });
 
@@ -343,10 +340,7 @@ const resendEmailVerifiedCode = async (req, res) => {
       service: "gmail",
       auth: {
         user: "eduhub12341@gmail.com",
-        pass: "gxeofgwhxawihefr",
-      },
-      tls: {
-        rejectUnauthorized: false,
+        pass: "aololuhhycykynde",
       },
     });
     const verifyCode = Math.floor(Math.random() * 900000) + 100000;
@@ -827,10 +821,7 @@ const getUserByEmail = async (req, res) => {
         service: "gmail",
         auth: {
           user: "eduhub12341@gmail.com",
-          pass: "gxeofgwhxawihefr",
-        },
-        tls: {
-          rejectUnauthorized: false,
+          pass: "aololuhhycykynde",
         },
       });
       var mailOptions = {
