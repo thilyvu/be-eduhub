@@ -13,6 +13,8 @@ const {
   resetPassword,
   refreshToken,
   deleteUser,
+  verifyCode,
+  resendEmailVerifiedCode,
 } = require("../../util/auth");
 const router = Router();
 
@@ -27,6 +29,13 @@ router.post("/register-super-admin", async (req, res) => {
 });
 router.post("/refresh-token", async (req, res) => {
   await refreshToken(req, res);
+});
+
+router.post("/resendMail/:email", async (req, res) => {
+  await resendEmailVerifiedCode(req, res);
+});
+router.post("/verifyCode", async (req, res) => {
+  await verifyCode(req, res);
 });
 
 router.post("/login-user", async (req, res) => {

@@ -47,10 +47,18 @@ const UserSchema = new Schema(
       type: Array,
       default: [],
     },
-    avatar : {
-      type : String,
+    avatar: {
+      type: String,
       default: "",
-    }
+    },
+    emailCode: {
+      type: String,
+      default: "",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -26,6 +26,10 @@ const userUpdateSchema = Joi.object().keys({
   name: Joi.string(),
   role: Joi.string(),
 });
+const verifyCodeSchema = Joi.object().keys({
+  email: Joi.string().required(),
+  code: Joi.string().required(),
+});
 const userTokenSchema = Joi.object().keys({
   refreshToken: Joi.string(),
 });
@@ -51,4 +55,5 @@ module.exports = {
   userUpdatePasswordValidation,
   userResetPasswordValidation,
   userTokenSchema,
+  verifyCodeSchema,
 };
