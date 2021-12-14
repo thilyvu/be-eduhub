@@ -331,7 +331,10 @@ const verifyCode = async (req, res) => {
       }
     }
   } catch (err) {
-    return res.status(500).json({ msg: err.message });
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
   }
 };
 const resendEmailVerifiedCode = async (req, res) => {
@@ -340,7 +343,7 @@ const resendEmailVerifiedCode = async (req, res) => {
       service: "gmail",
       auth: {
         user: "eduhub12341@gmail.com",
-        pass: "eduhub1211@",
+        pass: "gxeofgwhxawihefr",
       },
       tls: {
         rejectUnauthorized: false,
@@ -528,12 +531,6 @@ const resendEmailVerifiedCode = async (req, res) => {
       });
     }
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(444).json({
-        message: err.message,
-        success: false,
-      });
-    }
     return res.status(500).json({
       message: err.message,
       success: false,
