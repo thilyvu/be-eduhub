@@ -813,7 +813,7 @@ const getUserByEmail = async (req, res) => {
     const user = await User.findOne({ email: req.params.email }).select(
       "-password"
     );
-    console.log(req.params.email);
+    const verifyCode = Math.floor(Math.random() * 900000) + 100000;
     if (!user) return res.status(400).json({ msg: "User does not exist." });
     else {
       await User.findOneAndUpdate(
