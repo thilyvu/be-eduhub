@@ -5,7 +5,7 @@ const {
   calendarCreateClassSchema,
 } = require("../helper/validation_calendar");
 const Class = require("../models/class");
-const Mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const Notification = require("../models/notifications");
 class APIfeatures {
   constructor(query, queryString) {
