@@ -213,7 +213,7 @@ const userRegister = async (userDets, role, res) => {
           <![endif]--><div aria-labelledby="mj-column-per-100" class="mj-column-per-100 outlook-group-fix" style="vertical-align:top;display:inline-block;direction:ltr;font-size:13px;text-align:left;width:100%;"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0"><tbody><tr><td style="word-break:break-word;font-size:0px;padding:0px 0px 20px;" align="left"><div style="cursor:auto;color:#737F8D;font-family:Whitney, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;font-size:16px;line-height:24px;text-align:left;">
                 <p><img src="https://cdn.discordapp.com/email_assets/127c95bbea39cd4bc1ad87d1500ae27d.png" alt="Party Wumpus" title="None" width="500" style="height: auto;"></p>
     
-      <h2 style="font-family: Whitney, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;font-weight: 500;font-size: 20px;color: #4F545C;letter-spacing: 0.27px;">Hey ${email},</h2>
+      <h2 style="font-family: Whitney, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;font-weight: 500;font-size: 20px;color: #4F545C;letter-spacing: 0.27px;">Hey ${result.email},</h2>
     <p>Wowwee! Thanks for registering an account with eduhub!.</p>
     <p>Before we get started, we'll need to verify your email.</p>
     <p>Below are your email verify code.</p>
@@ -813,6 +813,7 @@ const getUserByEmail = async (req, res) => {
     const user = await User.findOne({ email: req.params.email }).select(
       "-password"
     );
+    console.log(req.params.email);
     if (!user) return res.status(400).json({ msg: "User does not exist." });
     else {
       await User.findOneAndUpdate(
@@ -832,7 +833,7 @@ const getUserByEmail = async (req, res) => {
       });
       var mailOptions = {
         from: process.env.EMAIL,
-        to: `${email}`,
+        to: `${req.params.email}`,
         subject: "Verify email for eduhub account",
         html: `<head>
           <title></title>
@@ -940,7 +941,7 @@ const getUserByEmail = async (req, res) => {
               <![endif]--><div aria-labelledby="mj-column-per-100" class="mj-column-per-100 outlook-group-fix" style="vertical-align:top;display:inline-block;direction:ltr;font-size:13px;text-align:left;width:100%;"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0"><tbody><tr><td style="word-break:break-word;font-size:0px;padding:0px 0px 20px;" align="left"><div style="cursor:auto;color:#737F8D;font-family:Whitney, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;font-size:16px;line-height:24px;text-align:left;">
                     <p><img src="https://cdn.discordapp.com/email_assets/127c95bbea39cd4bc1ad87d1500ae27d.png" alt="Party Wumpus" title="None" width="500" style="height: auto;"></p>
         
-          <h2 style="font-family: Whitney, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;font-weight: 500;font-size: 20px;color: #4F545C;letter-spacing: 0.27px;">Hey ${email},</h2>
+          <h2 style="font-family: Whitney, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;font-weight: 500;font-size: 20px;color: #4F545C;letter-spacing: 0.27px;">Hey ${req.params.email},</h2>
         <p>Wowwee! Thanks for registering an account with eduhub!.</p>
         <p>Before we get started, we'll need to verify your email.</p>
         <p>Below are your email verify code.</p>
