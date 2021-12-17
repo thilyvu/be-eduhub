@@ -4,6 +4,7 @@ const {
   calendarUpdateSchema,
   calendarCreateClassSchema,
 } = require("../helper/validation_calendar");
+const User = require("../models/users");  
 const Class = require("../models/class");
 const mongoose = require("mongoose");
 const Notification = require("../models/notifications");
@@ -177,8 +178,39 @@ const calendarNameValidation = async (calendarname) => {
 
 const getListCalendar = async (req, res) => {
   try {
+    const student = await User.findById(req.user._id)
+    const classIds = student.classes.map((item)=> item._id);
     const features = new APIfeatures(
-      Calendar.find({ createBy: req.user._id }),
+      Calendar.find({$or: [{ createBy: req.user._id }, {classId : {$in : classIds}}]}),
+      req.query
+    )
+      .filtering()
+      .sorting()
+      .paginating();
+
+    const listCalendar = await features.query;
+    return res.status(201).json({
+      message: "Get list calendar successful",
+      success: true,
+      data: listCalendar,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
+const getListAllCalendar = async (req, res) => {
+  try {
+    const features = new APIfeatures(
+      Calendar.find(),
       req.query
     )
       .filtering()
@@ -280,4 +312,5 @@ module.exports = {
   getCalendarById,
   createClassCalendar,
   getListClassCalendar,
+  getListAllCalendar
 };

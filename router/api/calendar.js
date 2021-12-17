@@ -7,7 +7,8 @@ const {
   getListCalendar,
   getCalendarById,
   createClassCalendar,
-  getListClassCalendar
+  getListClassCalendar,
+  getListAllCalendar
 } = require("../../util/calendar");
 
 const router = Router();
@@ -18,7 +19,9 @@ router.post("/calendar", userAuth, async (req, res) => {
 router.get("/calendar", userAuth, async (req, res) => {
   await getListCalendar(req, res);
 });
-
+router.get("/allCalendar", userAuth, async (req, res) => {
+  await getListAllCalendar(req, res);
+});
 router.post("/classCalendar", userAuth, async (req, res) => {
   await createClassCalendar(req, res);
 });
