@@ -218,10 +218,12 @@ const getListAllCalendar = async (req, res) => {
       .paginating();
 
     const listCalendar = await features.query;
+    const total = await Calendar.countDocuments({});
     return res.status(201).json({
       message: "Get list calendar successful",
       success: true,
       data: listCalendar,
+      total: total
     });
   } catch (err) {
     if (err.isJoi === true) {
