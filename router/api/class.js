@@ -16,7 +16,7 @@ const {
 } = require("../../util/class");
 const router = Router();
 
-router.post("/class", userAuth, async (req, res) => {
+router.post("/class", userAuth,checkRole(["teacher"]), async (req, res) => {
   await createClass(req, res);
 });
 router.post("/joinClass/:id", userAuth, async (req, res) => {

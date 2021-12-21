@@ -65,6 +65,7 @@ class APIfeatures {
 }
 const createClass = async (req, res) => {
   try {
+    console.log(req.user)
     const result = await classCreateSchema.validateAsync(req.body);
     const newClass = new Class({
       ...result,
