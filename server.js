@@ -27,7 +27,7 @@ mongoose
   .then(console.log("Mongodb database connected... "))
   .catch((err) => console.log(err));
 
-app.use("/api/users", require("./router/api/users"));
+app.use("/api", require("./router/api/users"));
 app.use("/api", require("./router/api/class"));
 app.use("/api", require("./router/api/calendar"));
 app.use("/api", require("./router/api/lecture"));
