@@ -814,10 +814,10 @@ const getClassById = async (req, res) => {
     listClass.newFeeds = listClass.newFeeds.map((item) => {
       item.createAvatar = user.find(
         (u) => u._id.toString() === item.createBy
-      ).avatar;
+      )?.avatar;
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy
-      ).name;
+      )?.name;
       return item;
     });
     const commentIds = listClass.newFeeds.flatMap((newFeed) =>
@@ -830,10 +830,10 @@ const getClassById = async (req, res) => {
       newFeed.comments = newFeed.comments.map((comment) => {
         comment.createAvatar = commentUsers.find(
           (u) => u._id.toString() === comment.createBy
-        ).avatar;
+        )?.avatar;
         comment.createName = commentUsers.find(
           (u) => u._id.toString() === comment.createBy
-        ).name;
+        )?.name;
         return comment;
       });
       return newFeed;
