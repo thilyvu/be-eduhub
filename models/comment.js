@@ -6,7 +6,9 @@ const CommentSchema = new Schema({
   },
   newFeedId : { 
     type: String, 
-    required : true
+  },
+  lectureId : {
+    type : String
   },
   createBy : {
     type : String,

@@ -98,6 +98,203 @@ const createNewFeed = async (req, res) => {
     });
   }
 };
+const pin  = async (req, res) => {
+  try {
+    const oldNewFeed = await NewFeed.findById(mongoose.Types.ObjectId(req.params.id));
+    const updateNewFeed = {
+      ...oldNewFeed,
+      updateBy: req.user.id,
+      pin : true
+    };
+    const updatedNewFeed = await Object.assign(oldNewFeed, updateNewFeed);
+    if (!updatedNewFeed) return null;
+    await updatedNewFeed.save();
+    const newFeedId = updatedNewFeed._id;
+
+    const updateClass = await Class.findOneAndUpdate(
+      { _id: oldNewFeed.classId, "newFeeds._id": newFeedId },
+      {
+        $set: {
+          "newFeeds.$": updatedNewFeed,
+        },
+      }
+    );
+    return res.status(201).json({
+      message: "newFeed update successful ",
+      success: true,
+      data: updateClass,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
+
+const like  = async (req, res) => {
+  try {
+    const oldNewFeed = await NewFeed.findById(mongoose.Types.ObjectId(req.params.id));
+    let isExisted = false;
+    if(oldNewFeed.likes.length > 0 ) {
+      oldNewFeed.likes.forEach ((item) => {
+        if(item.toString() === req.user._id.toString()) {
+          isExisted =true;
+        }
+      })
+    }
+    if(!isExisted) {
+      const oldLikes =Array.from (oldNewFeed.likes );
+      oldLikes.push(req.user._id.toString());
+      const updateNewFeed = {
+        ...oldNewFeed,
+        updateBy: req.user.id,
+        likes : oldLikes
+      };
+
+      const updatedNewFeed = await Object.assign(oldNewFeed, updateNewFeed);
+      if (!updatedNewFeed) return null;
+      await updatedNewFeed.save();
+      const newFeedId = updatedNewFeed._id;
+  
+      const updateClass = await Class.findOneAndUpdate(
+        { _id: oldNewFeed.classId, "newFeeds._id": newFeedId },
+        {
+          $set: {
+            "newFeeds.$": updatedNewFeed,
+          },
+        }
+      );
+      return res.status(201).json({
+        message: "newFeed update successful ",
+        success: true,
+        data: updateClass,
+      });
+    }
+    else {
+      return res.status(201).json({
+        message: "Already like this newfeed ",
+        success: true,
+      });
+    }
+
+   
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
+const unLike  = async (req, res) => {
+  try {
+    const oldNewFeed = await NewFeed.findById(mongoose.Types.ObjectId(req.params.id));
+    let isExisted = false;
+    if(oldNewFeed.likes.length > 0 ) {
+      oldNewFeed.likes.forEach ((item) => {
+        if(item.toString() === req.user._id.toString()) {
+          isExisted =true;
+        }
+      })
+    }
+    if(isExisted) {
+      const newLikes = oldNewFeed.likes.filter((item)=> item.toString() !== req.user._id.toString())
+      const updateNewFeed = {
+        ...oldNewFeed,
+        updateBy: req.user.id,
+        likes : newLikes
+      };
+      const updatedNewFeed = await Object.assign(oldNewFeed, updateNewFeed);
+      if (!updatedNewFeed) return null;
+      await updatedNewFeed.save();
+      const newFeedId = updatedNewFeed._id;
+  
+      const updateClass = await Class.findOneAndUpdate(
+        { _id: oldNewFeed.classId, "newFeeds._id": newFeedId },
+        {
+          $set: {
+            "newFeeds.$": updatedNewFeed,
+          },
+        }
+      );
+      return res.status(201).json({
+        message: "newFeed update successful ",
+        success: true,
+        data: updateClass,
+      });
+    }
+    else {
+      return res.status(201).json({
+        message: "Already unLike this newfeed ",
+        success: true,
+      });
+    }
+
+   
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
+const unPin  = async (req, res) => {
+  try {
+    const oldNewFeed = await NewFeed.findById(mongoose.Types.ObjectId(req.params.id));
+    const updateNewFeed = {
+      ...oldNewFeed,
+      updateBy: req.user.id,
+      pin : false
+    };
+    const updatedNewFeed = await Object.assign(oldNewFeed, updateNewFeed);
+    if (!updatedNewFeed) return null;
+    await updatedNewFeed.save();
+    const newFeedId = updatedNewFeed._id;
+
+    const updateClass = await Class.findOneAndUpdate(
+      { _id: oldNewFeed.classId, "newFeeds._id": newFeedId },
+      {
+        $set: {
+          "newFeeds.$": updatedNewFeed,
+        },
+      }
+    );
+    return res.status(201).json({
+      message: "newFeed update successful ",
+      success: true,
+      data: updateClass,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
 const updateNewFeed = async (req, res) => {
   try {
     const result = await newFeedUpdateSchema.validateAsync(req.body);
@@ -221,4 +418,8 @@ module.exports = {
   deleteNewFeed,
   getListNewFeed,
   getNewFeedById,
+  pin,
+  unPin,
+  like,
+  unLike
 };

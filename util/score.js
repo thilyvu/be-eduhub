@@ -174,10 +174,10 @@ const getListScore = async (req, res) => {
     listScore = listScore.map((item) => {
       item.createAvatar = user.find(
         (u) => u._id.toString() === item.createBy.toString()
-      )?.avatar;
+      ).avatar;
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy.toString()
-      )?.name;
+      ).name;
 
       // item.exerciseName =
       //   exercises.find((u) => {
@@ -226,10 +226,10 @@ const getListExerciseScore = async (req, res) => {
     listScore = listScore.map((item) => {
       item.createAvatar = user.find(
         (u) => u._id.toString() === item.createBy.toString()
-      )?.avatar;
+      ).avatar;
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy.toString()
-      )?.name;
+      ).name;
       return item;
     });
     return res.status(201).json({

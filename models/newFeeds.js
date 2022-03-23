@@ -30,7 +30,22 @@ const newFeedSchema = new Schema({
   updateBy : {
     type: String,
     default : null
-  }
+  },
+  pin :{
+    type : Boolean,
+    default : false
+  },
+  likes :{
+    type : Array,
+    default : []
+  },
+  totalLikes : {
+    type : String,
+    default: 0
+  },
+  isLiked : {
+    type : Boolean
+  },
 
 },{timestamps : true})
 module.exports = model('newFeed', newFeedSchema)

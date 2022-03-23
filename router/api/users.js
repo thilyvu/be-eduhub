@@ -59,6 +59,7 @@ router.post("/logout", (req, res) => {
 router.get(
   "/getListUsers",
   userAuth,
+  checkRole(["teacher"]),
   async (req, res) => {
     await getListUser(req, res);
   }
@@ -69,6 +70,7 @@ router.get("/getUserByEmail/:email", async (req, res) => {
 router.get(
   "/getUser/:id",
   userAuth,
+  checkRole(["teacher"]),
   async (req, res) => {
     await getUserById(req, req.params.id, res);
   }
@@ -87,6 +89,7 @@ router.get("/user-profile", userAuth, async (req, res) => {
 router.get(
   "/teacher-profile",
   userAuth,
+  checkRole(["teacher"]),
   async (req, res) => {
     return res.json(serializeUser(req.user));
   }
@@ -97,6 +100,7 @@ router.delete("/deleteUser/:id", userAuth, async (req, res) => {
 router.get(
   "/super-admin-profile",
   userAuth,
+  checkRole(["admin"]),
   async (req, res) => {
     return res.json(serializeUser(req.user));
   }

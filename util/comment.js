@@ -1,5 +1,6 @@
 const Comment = require("../models/comment");
 const NewFeed = require("../models/newFeeds");
+const Lecture = require("../models/lectures");
 const Class = require("../models/class");
 const mongoose = require("mongoose");
 const Notification = require("../models/notifications");
@@ -56,67 +57,109 @@ const createComment = async (req, res) => {
   try {
     const result = await commentCreateSchema.validateAsync(req.body);
     const newFeedId = result.newFeedId;
-
+    const lectureId = result.lectureId;
     const newComment = new Comment({
       ...result,
       createBy: req.user._id,
     });
-    const newCommentCreated = await newComment.save();
-    const addedNewFeed = await NewFeed.findOneAndUpdate(
-      { _id: newFeedId },
-      {
-        $push: { comments: newCommentCreated },
-        $set: { updateBy: req.user._id },
-      }
-    );
-    const oldNewFeed = await NewFeed.findById(
-      mongoose.Types.ObjectId(newFeedId)
-    );
-    // console.log(await Class.findOne(
-    //   {
-    //     $and: [
-    //       { _id: { $eq:  mongoose.Types.ObjectId(addedNewFeed.classId) } },
-    //       {
-    //         "newFeeds._id": { $eq: mongoose.Types.ObjectId(result.newFeedId) },
-    //       },
-    //     ],
-    //   }));
-
-    const updateClass = await Class.findOneAndUpdate(
-      {
-        $and: [
-          { _id: { $eq: mongoose.Types.ObjectId(addedNewFeed.classId) } },
-          {
-            "newFeeds._id": { $eq: mongoose.Types.ObjectId(result.newFeedId) },
-          },
-        ],
-      },
-      {
-        $push: {
-          "newFeeds.$.comments": newCommentCreated,
+    if(newFeedId) {
+      const newCommentCreated = await newComment.save();
+      const addedNewFeed = await NewFeed.findOneAndUpdate(
+        { _id: newFeedId },
+        {
+          $push: { comments: newCommentCreated },
+          $set: { updateBy: req.user._id },
+        }
+      );
+      const oldNewFeed = await NewFeed.findById(
+        mongoose.Types.ObjectId(newFeedId)
+      );
+      const updateClass = await Class.findOneAndUpdate(
+        {
+          $and: [
+            { _id: { $eq: mongoose.Types.ObjectId(addedNewFeed.classId) } },
+            {
+              "newFeeds._id": { $eq: mongoose.Types.ObjectId(result.newFeedId) },
+            },
+          ],
         },
-      }
-    );
-    const oldClass = await Class.findById(
-      mongoose.Types.ObjectId(addedNewFeed.classId)
-    );
-    const newNotification = new Notification({
-      title: "Thêm tin bình luận mới ",
-      type: "create",
-      content: `${req.user.name} vừa thêm 1 bình luân mới`,
-      userId: oldNewFeed.createBy,
-      metadata: {
-        ClassId: addedNewFeed.classId,
-        newFeedId: result.newFeedId,
-      },
-      bannerImg: oldClass.bannerImg,
-    });
-    await newNotification.save();
-    return res.status(201).json({
-      message: "New comment create successful ",
-      success: true,
-      data: updateClass,
-    });
+        {
+          $push: {
+            "newFeeds.$.comments": newCommentCreated,
+          },
+        }
+      );
+      const oldClass = await Class.findById(
+        mongoose.Types.ObjectId(addedNewFeed.classId)
+      );
+      const newNotification = new Notification({
+        title: "Thêm tin bình luận mới ",
+        type: "create",
+        content: `${req.user.name} vừa thêm 1 bình luân mới`,
+        userId: oldNewFeed.createBy,
+        metadata: {
+          ClassId: addedNewFeed.classId,
+          newFeedId: result.newFeedId,
+        },
+        bannerImg: oldClass.bannerImg,
+      });
+      await newNotification.save();
+      return res.status(201).json({
+        message: "New comment create successful ",
+        success: true,
+        data: updateClass,
+      });
+    }
+    if(lectureId) {
+      const newCommentCreated = await newComment.save();
+      const addedLecture = await Lecture.findOneAndUpdate(
+        { _id: lectureId },
+        {
+          $push: { comments: newCommentCreated },
+          $set: { updateBy: req.user._id },
+        }
+      );
+      const oldLecture = await Lecture.findById(
+        mongoose.Types.ObjectId(lectureId)
+      );
+  
+      const updateClass = await Class.findOneAndUpdate(
+        {
+          $and: [
+            { _id: { $eq: mongoose.Types.ObjectId(addedLecture.classId) } },
+            {
+              "lectures._id": { $eq: mongoose.Types.ObjectId(result.lectureId) },
+            },
+          ],
+        },
+        {
+          $push: {
+            "lectures.$.comments": newCommentCreated,
+          },
+        }
+      );
+      const oldClass = await Class.findById(
+        mongoose.Types.ObjectId(addedLecture.classId)
+      );
+      const newNotification = new Notification({
+        title: "Thêm tin bình luận mới ",
+        type: "create",
+        content: `${req.user.name} vừa thêm 1 bình luân mới`,
+        userId: oldLecture.createBy,
+        metadata: {
+          ClassId: addedLecture.classId,
+          newFeedId: result.newFeedId,
+        },
+        bannerImg: oldClass.bannerImg,
+      });
+      await newNotification.save();
+      return res.status(201).json({
+        message: "New comment create successful ",
+        success: true,
+        data: updateClass,
+      });
+    }
+
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({

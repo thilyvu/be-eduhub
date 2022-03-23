@@ -55,12 +55,13 @@ router.get("/classByClassCode/:classCode", userAuth, async (req, res) => {
   await getClassByClassCode(req, res);
 });
 
-router.put("/class/:id", userAuth, async (req, res) => {
+router.put("/class/:id", userAuth, checkRole(["teacher"]), async (req, res) => {
   await updateClass(req, res);
 });
 router.delete(
   "/class/:id",
   userAuth,
+  checkRole(["teacher"]),
   async (req, res) => {
     await deleteClass(req, res);
   }

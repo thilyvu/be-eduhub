@@ -801,12 +801,18 @@ const getClassById = async (req, res) => {
       "-fileFolder",
       "-exercise",
     ]);
-    listClass.lectures = listClass.lectures.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
-    listClass.newFeeds = listClass.newFeeds.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
+    if( listClass.lectures) {
+      listClass.lectures = listClass.lectures.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
+    }
+    if(  listClass.newFeeds)
+    {
+      listClass.newFeeds = listClass.newFeeds.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
+    }
+
     const ids = listClass.newFeeds.map((item) =>
       mongoose.Types.ObjectId(item.createBy)
     );
@@ -814,10 +820,17 @@ const getClassById = async (req, res) => {
     listClass.newFeeds = listClass.newFeeds.map((item) => {
       item.createAvatar = user.find(
         (u) => u._id.toString() === item.createBy
-      )?.avatar;
+      ).avatar;
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy
-      )?.name;
+      ).name;
+      item.totalLikes = item.likes.length;
+      item.isLiked = false;
+      item.likes.map((element)=> {
+        if(element.toString()=== req.user._id.toString()){
+        item.isLiked = true;
+      }
+    })
       return item;
     });
     const commentIds = listClass.newFeeds.flatMap((newFeed) =>
@@ -825,19 +838,44 @@ const getClassById = async (req, res) => {
         mongoose.Types.ObjectId(comment.createBy)
       )
     );
-    let commentUsers = await User.find({ _id: { $in: commentIds } });
-    listClass.newFeeds = listClass.newFeeds.map((newFeed) => {
-      newFeed.comments = newFeed.comments.map((comment) => {
-        comment.createAvatar = commentUsers.find(
+    const lectureIds = listClass.lectures.flatMap((lecture) =>{
+        return lecture.comments.map((comment) => {
+          return mongoose.Types.ObjectId(comment.createBy)
+        }
+     
+      )
+    }
+
+  );
+  let commentUsers = await User.find({ _id: { $in: commentIds } });
+  listClass.newFeeds = listClass.newFeeds.map((newFeed) => {
+    newFeed.comments = newFeed.comments.map((comment) => {
+      comment.createAvatar = commentUsers.find(
+        (u) => u._id.toString() === comment.createBy
+      ).avatar;
+      comment.createName = commentUsers.find(
+        (u) => u._id.toString() === comment.createBy
+      ).name;
+      return comment;
+    });
+    return newFeed;
+  });
+  let commentLectureUsers = await User.find({ _id: { $in: lectureIds } });
+  listClass.lectures = listClass.lectures.map((lecture) => {
+    if(lecture.comments) {
+      lecture.comments = lecture.comments.map((comment) => {
+        comment.createAvatar = commentLectureUsers.find(
           (u) => u._id.toString() === comment.createBy
-        )?.avatar;
-        comment.createName = commentUsers.find(
+        ).avatar;
+        comment.createName = commentLectureUsers.find(
           (u) => u._id.toString() === comment.createBy
-        )?.name;
+        ).name;
         return comment;
       });
-      return newFeed;
-    });
+    }
+
+    return lecture;
+  });
     if (!listClass)
       return res.status(400).json({ msg: "Class does not exist." });
 

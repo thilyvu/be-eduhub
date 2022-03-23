@@ -33,7 +33,19 @@ const LectureSchema = new Schema({
   updateBy : {
     type: String,
     default : null
-  }
+  },
+  comments: {
+    type : Array, 
+    default : []
+  },
+  createName :{
+    type : String,
+    default : null
+  },
+  createAvatar :{
+    type : String,
+    default : null
+  },
 
 },{timestamps : true})
 module.exports = model('lecture', LectureSchema)

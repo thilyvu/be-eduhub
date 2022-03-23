@@ -6,6 +6,10 @@ const {
   deleteNewFeed,
   getListNewFeed,
   getNewFeedById,
+  pin,
+  unPin,
+  like,
+  unLike
 } = require("../../util/newFeed");
 const router = Router();
 
@@ -15,7 +19,18 @@ router.post("/newFeed", userAuth, async (req, res) => {
 router.get("/newFeed", userAuth, async (req, res) => {
   await getListNewFeed(req, res);
 });
-
+router.post("/pin/:id", userAuth, async (req, res) => {
+  await pin(req, res);
+});
+router.post("/like/:id", userAuth, async (req, res) => {
+  await like(req, res);
+});
+router.post("/unLike/:id", userAuth, async (req, res) => {
+  await unLike(req, res);
+});
+router.post("/unPin/:id", userAuth, async (req, res) => {
+  await unPin(req, res);
+});
 router.get("/newFeedById/:id", userAuth, async (req, res) => {
   await getNewFeedById(req, res);s
 });
