@@ -65,7 +65,7 @@ class APIfeatures {
 }
 const createClass = async (req, res) => {
   try {
-    console.log(req.user)
+    console.log(req.user);
     const result = await classCreateSchema.validateAsync(req.body);
     const newClass = new Class({
       ...result,
@@ -801,13 +801,12 @@ const getClassById = async (req, res) => {
       "-fileFolder",
       "-exercise",
     ]);
-    if( listClass.lectures) {
+    if (listClass.lectures) {
       listClass.lectures = listClass.lectures.sort(
         (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       );
     }
-    if(  listClass.newFeeds)
-    {
+    if (listClass.newFeeds) {
       listClass.newFeeds = listClass.newFeeds.sort(
         (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       );
@@ -824,13 +823,14 @@ const getClassById = async (req, res) => {
       item.createName = user.find(
         (u) => u._id.toString() === item.createBy
       ).name;
-      item.totalLikes = item.likes.length;
+      item.totalLikes = item.likes ? item.likes.length : 0;
       item.isLiked = false;
-      item.likes.map((element)=> {
-        if(element.toString()=== req.user._id.toString()){
-        item.isLiked = true;
-      }
-    })
+      item.likes &&
+        item.likes.map((element) => {
+          if (element.toString() === req.user._id.toString()) {
+            item.isLiked = true;
+          }
+        });
       return item;
     });
     const commentIds = listClass.newFeeds.flatMap((newFeed) =>
@@ -838,44 +838,40 @@ const getClassById = async (req, res) => {
         mongoose.Types.ObjectId(comment.createBy)
       )
     );
-    const lectureIds = listClass.lectures.flatMap((lecture) =>{
-        return lecture.comments.map((comment) => {
-          return mongoose.Types.ObjectId(comment.createBy)
-        }
-     
-      )
-    }
-
-  );
-  let commentUsers = await User.find({ _id: { $in: commentIds } });
-  listClass.newFeeds = listClass.newFeeds.map((newFeed) => {
-    newFeed.comments = newFeed.comments.map((comment) => {
-      comment.createAvatar = commentUsers.find(
-        (u) => u._id.toString() === comment.createBy
-      ).avatar;
-      comment.createName = commentUsers.find(
-        (u) => u._id.toString() === comment.createBy
-      ).name;
-      return comment;
+    const lectureIds = listClass.lectures.flatMap((lecture) => {
+      return lecture.comments.map((comment) => {
+        return mongoose.Types.ObjectId(comment.createBy);
+      });
     });
-    return newFeed;
-  });
-  let commentLectureUsers = await User.find({ _id: { $in: lectureIds } });
-  listClass.lectures = listClass.lectures.map((lecture) => {
-    if(lecture.comments) {
-      lecture.comments = lecture.comments.map((comment) => {
-        comment.createAvatar = commentLectureUsers.find(
+    let commentUsers = await User.find({ _id: { $in: commentIds } });
+    listClass.newFeeds = listClass.newFeeds.map((newFeed) => {
+      newFeed.comments = newFeed.comments.map((comment) => {
+        comment.createAvatar = commentUsers.find(
           (u) => u._id.toString() === comment.createBy
         ).avatar;
-        comment.createName = commentLectureUsers.find(
+        comment.createName = commentUsers.find(
           (u) => u._id.toString() === comment.createBy
         ).name;
         return comment;
       });
-    }
+      return newFeed;
+    });
+    let commentLectureUsers = await User.find({ _id: { $in: lectureIds } });
+    listClass.lectures = listClass.lectures.map((lecture) => {
+      if (lecture.comments) {
+        lecture.comments = lecture.comments.map((comment) => {
+          comment.createAvatar = commentLectureUsers.find(
+            (u) => u._id.toString() === comment.createBy
+          ).avatar;
+          comment.createName = commentLectureUsers.find(
+            (u) => u._id.toString() === comment.createBy
+          ).name;
+          return comment;
+        });
+      }
 
-    return lecture;
-  });
+      return lecture;
+    });
     if (!listClass)
       return res.status(400).json({ msg: "Class does not exist." });
 
