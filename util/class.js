@@ -812,66 +812,85 @@ const getClassById = async (req, res) => {
       );
     }
 
-    const ids = listClass.newFeeds.map((item) =>
-      mongoose.Types.ObjectId(item.createBy)
-    );
+    const ids = listClass.newFeeds
+      ? listClass.newFeeds.map((item) => mongoose.Types.ObjectId(item.createBy))
+      : [];
     let user = await User.find({ _id: { $in: ids } });
-    listClass.newFeeds = listClass.newFeeds.map((item) => {
-      item.createAvatar = user.find(
-        (u) => u._id.toString() === item.createBy
-      ).avatar;
-      item.createName = user.find(
-        (u) => u._id.toString() === item.createBy
-      ).name;
-      item.totalLikes = item.likes ? item.likes.length : 0;
-      item.isLiked = false;
-      item.likes &&
-        item.likes.map((element) => {
-          if (element.toString() === req.user._id.toString()) {
-            item.isLiked = true;
-          }
-        });
-      return item;
-    });
-    const commentIds = listClass.newFeeds.flatMap((newFeed) =>
-      newFeed.comments.map((comment) =>
-        mongoose.Types.ObjectId(comment.createBy)
-      )
-    );
-    const lectureIds = listClass.lectures.flatMap((lecture) => {
-      return lecture.comments.map((comment) => {
-        return mongoose.Types.ObjectId(comment.createBy);
-      });
-    });
-    let commentUsers = await User.find({ _id: { $in: commentIds } });
-    listClass.newFeeds = listClass.newFeeds.map((newFeed) => {
-      newFeed.comments = newFeed.comments.map((comment) => {
-        comment.createAvatar = commentUsers.find(
-          (u) => u._id.toString() === comment.createBy
+    if (listClass.newFeeds) {
+      listClass.newFeeds = listClass.newFeeds.map((item) => {
+        item.createAvatar = user.find(
+          (u) => u._id.toString() === item.createBy
         ).avatar;
-        comment.createName = commentUsers.find(
-          (u) => u._id.toString() === comment.createBy
+        item.createName = user.find(
+          (u) => u._id.toString() === item.createBy
         ).name;
-        return comment;
-      });
-      return newFeed;
-    });
-    let commentLectureUsers = await User.find({ _id: { $in: lectureIds } });
-    listClass.lectures = listClass.lectures.map((lecture) => {
-      if (lecture.comments) {
-        lecture.comments = lecture.comments.map((comment) => {
-          comment.createAvatar = commentLectureUsers.find(
-            (u) => u._id.toString() === comment.createBy
-          ).avatar;
-          comment.createName = commentLectureUsers.find(
-            (u) => u._id.toString() === comment.createBy
-          ).name;
-          return comment;
-        });
-      }
+        if (item.likes) {
+          item.totalLikes = item.likes ? item.likes.length : 0;
+          item.isLiked = false;
+          item.likes.map((element) => {
+            if (element.toString() === req.user._id.toString()) {
+              item.isLiked = true;
+            }
+          });
+        }
 
-      return lecture;
-    });
+        return item;
+      });
+    }
+
+    const commentIds = listClass.newFeeds
+      ? listClass.newFeeds.flatMap((newFeed) =>
+          newFeed.comments.map((comment) =>
+            mongoose.Types.ObjectId(comment.createBy)
+          )
+        )
+      : [];
+    const lectureIds = listClass.lectures
+      ? listClass.lectures.flatMap((lecture) => {
+          return lecture.comments
+            ? lecture.comments.map((comment) => {
+                return mongoose.Types.ObjectId(comment.createBy);
+              })
+            : [];
+        })
+      : [];
+    let commentUsers = await User.find({ _id: { $in: commentIds } });
+    listClass.newFeeds = listClass.newFeeds
+      ? listClass.newFeeds.map((newFeed) => {
+          newFeed.comments = newFeed.comments
+            ? newFeed.comments.map((comment) => {
+                comment.createAvatar = commentUsers.find(
+                  (u) => u._id.toString() === comment.createBy
+                ).avatar;
+                comment.createName = commentUsers.find(
+                  (u) => u._id.toString() === comment.createBy
+                ).name;
+                return comment;
+              })
+            : [];
+          return newFeed;
+        })
+      : [];
+    let commentLectureUsers = await User.find({ _id: { $in: lectureIds } });
+    listClass.lectures = listClass.lectures
+      ? listClass.lectures.map((lecture) => {
+          if (lecture.comments) {
+            lecture.comments = lecture.comments
+              ? lecture.comments.map((comment) => {
+                  comment.createAvatar = commentLectureUsers.find(
+                    (u) => u._id.toString() === comment.createBy
+                  ).avatar;
+                  comment.createName = commentLectureUsers.find(
+                    (u) => u._id.toString() === comment.createBy
+                  ).name;
+                  return comment;
+                })
+              : [];
+          }
+
+          return lecture;
+        })
+      : [];
     if (!listClass)
       return res.status(400).json({ msg: "Class does not exist." });
 
