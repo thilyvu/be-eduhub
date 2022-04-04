@@ -5,7 +5,7 @@ const testSchema = new Schema(
       type: String,
       required: true,
     },
-    description: {
+    testDescription: {
       type: String,
     },
     startDate: {
@@ -23,12 +23,15 @@ const testSchema = new Schema(
     },
     totalStudents: {
       type: String,
+      default: 0,
     },
     totalQuestions: {
       type: String,
+      default: 0,
     },
-    totalTopics :{
-      type : String,
+    totalTopics: {
+      type: String,
+      default: 0,
     },
     isHide: {
       type: Boolean,
@@ -38,9 +41,28 @@ const testSchema = new Schema(
       type: Array,
       default: [],
     },
-    listTopics :{
+    listTopics: {
       type: Array,
-      default:[]
+      default: [],
+    },
+    listQuestions: {
+      type: Array,
+      default: [],
+    },
+    listKeys: {
+      type: Array,
+      default: [],
+    },
+    listAnswers: {
+      type: Array,
+      default: [],
+    },
+    isShowPoint: {
+      type: Boolean,
+      default: false,
+    },
+    countDownTime: {
+      type: String,
     },
     createBy: {
       type: String,
@@ -49,6 +71,9 @@ const testSchema = new Schema(
     updateBy: {
       type: String,
       default: null,
+    },
+    createdUser: {
+      type: Object,
     },
   },
   { timestamps: true }

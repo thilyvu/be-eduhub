@@ -8,10 +8,10 @@ const session = require("express-session");
 const morgan = require("morgan");
 app.use(cors());
 app.use(morgan("tiny"));
-app.use(express.json());
 app.use(
-  express.urlencoded({
+  express.json({
     extended: true,
+    limit: "50mb",
   })
 );
 app.use(passport.initialize());
@@ -38,6 +38,7 @@ app.use("/api", require("./router/api/notification"));
 app.use("/api", require("./router/api/questionType"));
 app.use("/api", require("./router/api/score"));
 app.use("/api", require("./router/api/test"));
+app.use("/api", require("./router/api/studentKey"));
 app.use("/api", require("./router/api/fileFolder"));
 app.use("/api", require("./router/api/masterData/grade"));
 app.use("/api", require("./router/api/masterData/subject"));

@@ -2,26 +2,46 @@ const Joi = require("joi");
 
 const testCreateSchema = Joi.object().keys({
   testName: Joi.string().required(),
-  description: Joi.string(),
+  testDescription: Joi.string(),
   startDate: Joi.string(),
   endDate: Joi.string(),
   totalQuestions: Joi.string(),
   totalStudents: Joi.string(),
   totalTopics: Joi.string(),
-  listTopics : Joi.array()
+  listTopics: Joi.array(),
+  totalQuestions: Joi.string(),
+  listQuestions: Joi.array(),
+  listKeys: Joi.array(),
+  isShowPoint: Joi.boolean(),
+  listAnswers: Joi.array(),
+  countDownTime: Joi.string(),
 });
 
 const testUpdateSchema = Joi.object().keys({
-    testName: Joi.string(),
-    description: Joi.string(),
-    startDate: Joi.string(),
-    endDate: Joi.string(),
-    totalQuestions: Joi.string(),
-    totalStudents: Joi.string(),
-    totalTopics: Joi.string(),
-    listTopics : Joi.array()
+  testName: Joi.string(),
+  testDescription: Joi.string(),
+  startDate: Joi.string(),
+  endDate: Joi.string(),
+  totalQuestions: Joi.string(),
+  totalStudents: Joi.string(),
+  totalTopics: Joi.string(),
+  listTopics: Joi.array(),
+  listQuestions: Joi.array(),
+  listKeys: Joi.array(),
+  isShowPoint: Joi.boolean(),
+  listAnswers: Joi.array(),
+  countDownTime: Joi.string(),
+});
+const testUpdateClassSchema = Joi.object().keys({
+  classIds: Joi.array(),
+});
+const testRemoveClassSchema = Joi.object().keys({
+  classId: Joi.string().required(),
+  testId: Joi.string().required(),
 });
 module.exports = {
-    testCreateSchema,
-    testUpdateSchema,
+  testCreateSchema,
+  testUpdateSchema,
+  testUpdateClassSchema,
+  testRemoveClassSchema,
 };

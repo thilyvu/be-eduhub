@@ -139,7 +139,6 @@ const getListNotification = async (req, res) => {
 };
 const getListPersonalNotification = async (req, res) => {
   try {
-    console.log(req.user);
     const features = new APIfeatures(
       Notification.find({ userId: req.user._id }),
       req.query

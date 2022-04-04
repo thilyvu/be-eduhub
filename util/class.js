@@ -46,7 +46,6 @@ class APIfeatures {
   sorting() {
     if (this.queryString.sort) {
       const sortBy = this.queryString.sort.split(",").join(" ");
-      console.log(sortBy);
       this.query = this.query.sort(sortBy);
     } else {
       this.query = this.query.sort("-createdAt");
@@ -65,7 +64,6 @@ class APIfeatures {
 }
 const createClass = async (req, res) => {
   try {
-    console.log(req.user);
     const result = await classCreateSchema.validateAsync(req.body);
     const newClass = new Class({
       ...result,
@@ -938,7 +936,6 @@ const getListClass = async (req, res) => {
       .sorting()
       .paginating();
     const total = await Class.countDocuments({});
-    // console.log(a);
     const listClass = await features.query;
     return res.status(201).json({
       message: "Get list class successful",
@@ -974,7 +971,6 @@ const deleteClass = async (req, res) => {
         success: false,
       });
     }
-    console.log(deleteClass.students);
     const listUser = deleteClass.students;
     const classId = deleteClass._id;
     // delete class out of student profile
