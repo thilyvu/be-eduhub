@@ -5,6 +5,7 @@ var _ = require("lodash");
 const {
   studentKeyCreateSchema,
   studentKeyUpdateSchema,
+  studentKeyGetByClassAndTestSchema,
 } = require("../helper/validation_student_key");
 const mongoose = require("mongoose");
 const User = require("../models/users");
@@ -59,7 +60,7 @@ const createStudentKey = async (req, res) => {
     const result = await studentKeyCreateSchema.validateAsync(req.body);
     var studentKeys = _.cloneDeep(result.listKeys);
     studentKeys = studentKeys.map((studentKey) => {
-      return { isCorrect: false, ...studentKey };
+      return { isCorrect: true, ...studentKey };
     });
     const likeTest = await Test.findById(result.testId).select([
       "-listQuestions",
@@ -70,38 +71,48 @@ const createStudentKey = async (req, res) => {
     let listTopics = _.cloneDeep(likeTest.listTopics);
     let currentQuestionIndex = 0;
 
-    listTopics.map((topic, topicIndex) => {
+    listTopics.map((topic) => {
       topic.listQuestions.map((question, index) => {
         totalCorrect += question.numberOfQuestion;
         totalQuestions += question.numberOfQuestion;
         if (
           question.questionType === "Multiple choice with more than one answer"
         ) {
-          currentQuestionIndex += 1;
-          var difference = question.listKeys.filter(
-            (x) => !studentKeys[index].key.includes(x)
+          const listKeyIndex = studentKeys[currentQuestionIndex].key.map(
+            (item) => item.index
           );
-          if (difference && difference.length) {
-            totalCorrect -= difference.length;
+          var contains = question.listKeys.filter((x) =>
+            listKeyIndex.includes(x)
+          );
+          totalCorrect -= question.numberOfQuestion;
+          if (contains && contains.length) {
+            totalCorrect += contains.length;
           }
+          currentQuestionIndex += 1;
         } else if (
           question.questionType === "Yes/No/Not Given" ||
           question.questionType === "True/False/Not Given" ||
           question.questionType === "Multiple choice with one answer"
         ) {
-          currentQuestionIndex += 1;
-          if (studentKeys[index].key && studentKeys[index].key.length > 0) {
-            if (studentKeys[index].key[0] !== question.listKeys) {
+          if (
+            studentKeys[currentQuestionIndex].key &&
+            studentKeys[currentQuestionIndex].key.length > 0
+          ) {
+            if (
+              studentKeys[currentQuestionIndex].key[0].toString() !==
+              question.listKeys[0].toString()
+            ) {
+              studentKeys[currentQuestionIndex].isCorrect = false;
               totalCorrect -= 1;
             }
           } else {
+            studentKeys[currentQuestionIndex].isCorrect = false;
             totalCorrect -= 1;
           }
+          currentQuestionIndex += 1;
         } else {
           if (question.listKeys && question.listKeys.length > 1) {
-            console.log(question.listKeys);
             question.listKeys.map((keyel, keyElement) => {
-              console.log(keyel, keyElement);
               if (
                 studentKeys[currentQuestionIndex] &&
                 studentKeys[currentQuestionIndex].key &&
@@ -121,9 +132,8 @@ const createStudentKey = async (req, res) => {
                   key: keyel,
                 };
               }
+              currentQuestionIndex += 1;
             });
-          } else {
-            console.log("not array");
           }
         }
       });
@@ -132,13 +142,15 @@ const createStudentKey = async (req, res) => {
       ...result,
       listTopics: listTopics,
       studentId: req.user._id,
+      totalCorrect: totalCorrect,
+      totalQuestions: totalQuestions,
       createBy: req.user._id,
+      studentKeys: studentKeys,
     });
     const newStudentKeyCreated = await newStudentKey.save();
     return res.status(201).json({
       message: "New student key create successful ",
       success: true,
-      studentKeys: studentKeys,
       totalQuestions: totalQuestions,
       totalCorrect: totalCorrect,
     });
@@ -232,21 +244,42 @@ const getListStudentKey = async (req, res) => {
   }
 };
 
-const getStudentKeyByClassId = async (req, res) => {
+const getStudentKeyByClassAndTestId = async (req, res) => {
   try {
-    const oldClass = await Class.findById(req.params.classId);
-    const total = oldClass.students.length;
-    const features = new APIfeatures(
-      StudentKey.find({ classId: req.params.classId }),
-      req.query
-    )
-      .filtering()
-      .sorting()
-      .paginating();
-
-    let listStudentKey = await features.query;
-    const ids = listStudentKey.map((item) => mongoose.Types.ObjectId(item._id));
-
+    const result = await studentKeyGetByClassAndTestSchema.validateAsync(
+      req.body
+    );
+    const listStudentKey = await StudentKey.find({
+      $and: [
+        { classId: mongoose.Types.ObjectId(result.classId) },
+        { testId: mongoose.Types.ObjectId(result.testId) },
+      ],
+    });
+    const userIds = listStudentKey.flatMap((studentKey) =>
+      mongoose.Types.ObjectId(studentKey.studentId)
+    );
+    let createdUsers = await User.find({ _id: { $in: userIds } }).select([
+      "-classes",
+      "-password",
+      "-username",
+    ]);
+    listStudentKey.map((item, index) => {
+      item.index = index + 1;
+      item.createdUser = createdUsers.find(
+        (u) => u._id.toString() === item.studentId
+      );
+      item.studentKeys.map((key, keyIndex) => {
+        let index = keyIndex + 1;
+        if (key.questionType === "Multiple choice with more than one answer") {
+          index = keyIndex + 2;
+        }
+        key.index = index;
+      });
+      return item;
+    });
+    listStudentKey.sort(function (a, b) {
+      return b.createdAt - a.createdAt;
+    });
     return res.status(201).json({
       message: "Get list studentKey successful",
       success: true,
@@ -306,6 +339,6 @@ module.exports = {
   updateStudentKey,
   deleteStudentKey,
   getListStudentKey,
-  getStudentKeyByClassId,
+  getStudentKeyByClassAndTestId,
   getStudentKeyById,
 };

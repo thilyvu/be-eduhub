@@ -5,7 +5,7 @@ const {
   updateStudentKey,
   deleteStudentKey,
   getListStudentKey,
-  getStudentKeyByClassId,
+  getStudentKeyByClassAndTestId,
   getStudentKeyById,
 } = require("../../util/studentKey");
 
@@ -20,8 +20,8 @@ router.get("/studentKey", userAuth, async (req, res) => {
 router.get("/studentKeyById/:id", userAuth, async (req, res) => {
   await getStudentKeyById(req, res);
 });
-router.get("/studentKeyByClassId/:classId", userAuth, async (req, res) => {
-  await getStudentKeyByClassId(req, res);
+router.post("/StudentKeyByClassAndTestId", userAuth, async (req, res) => {
+  await getStudentKeyByClassAndTestId(req, res);
 });
 router.put("/studentKey/:id", userAuth, async (req, res) => {
   await updateStudentKey(req, res);

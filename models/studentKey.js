@@ -4,6 +4,9 @@ const studentKeySchema = new Schema(
     studentId: {
       type: String,
     },
+    index: {
+      type: String,
+    },
     listKeys: {
       type: Array,
       default: [],
@@ -16,6 +19,14 @@ const studentKeySchema = new Schema(
       type: String,
       required: true,
     },
+    totalCorrect: {
+      type: String,
+      default: 0,
+    },
+    totalQuestions: {
+      type: String,
+      default: 0,
+    },
     listTopics: {
       type: Array,
     },
@@ -26,6 +37,13 @@ const studentKeySchema = new Schema(
     updateBy: {
       type: String,
       default: null,
+    },
+    studentKeys: {
+      type: Array,
+      default: [],
+    },
+    createdUser: {
+      type: Object,
     },
   },
   { timestamps: true }

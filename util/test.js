@@ -1,5 +1,6 @@
 const Test = require("../models/test");
 const User = require("../models/users");
+const StudentKey = require("../models/studentKey");
 const mongoose = require("mongoose");
 const {
   testCreateSchema,
@@ -160,11 +161,22 @@ const getListTest = async (req, res) => {
     const userIds = listTest.flatMap((test) =>
       mongoose.Types.ObjectId(test.createBy)
     );
-    let createdUsers = await User.find({ _id: { $in: userIds } });
+    const testIds = listTest.flatMap((test) =>
+      mongoose.Types.ObjectId(test._id)
+    );
+    const listStudentKeys = await StudentKey.find({ testId: { $in: testIds } });
+    let createdUsers = await User.find({ _id: { $in: userIds } }).select([
+      "-classes",
+      "-password",
+      "-username",
+    ]);
     listTest.map((item) => {
       item.createdUser = createdUsers.find(
         (u) => u._id.toString() === item.createBy
       );
+      item.totalStudents = listStudentKeys.filter(
+        (sk) => sk.testId.toString() === item._id.toString()
+      ).length;
       return item;
     });
     return res.status(201).json({
@@ -250,6 +262,10 @@ const getTestByClassId = async (req, res) => {
     const userIds = listTest.flatMap((test) =>
       mongoose.Types.ObjectId(test.createBy)
     );
+    const testIds = listTest.flatMap((test) =>
+      mongoose.Types.ObjectId(test._id)
+    );
+    const listStudentKeys = await StudentKey.find({ testId: { $in: testIds } });
     let createdUsers = await User.find({ _id: { $in: userIds } }).select([
       "-classes",
       "-password",
@@ -259,6 +275,11 @@ const getTestByClassId = async (req, res) => {
       item.createdUser = createdUsers.find(
         (u) => u._id.toString() === item.createBy
       );
+      item.totalStudents = listStudentKeys.filter(
+        (sk) =>
+          sk.testId.toString() === item._id.toString() &&
+          sk.classId.toString() === req.params.classId.toString()
+      ).length;
       item.listTopics = [];
       item.listQuestions = [];
       item.listKeys = [];
