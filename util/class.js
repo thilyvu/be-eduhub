@@ -806,7 +806,10 @@ const getClassById = async (req, res) => {
     }
     if (listClass.newFeeds) {
       listClass.newFeeds = listClass.newFeeds.sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+        (a, b) =>  b.createdAt.getTime() - a.createdAt.getTime() 
+      );
+      listClass.newFeeds = listClass.newFeeds.sort(
+        (value) =>  value.pin ? -1 : 1 
       );
     }
 

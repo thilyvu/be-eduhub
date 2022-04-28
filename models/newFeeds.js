@@ -9,7 +9,7 @@ const newFeedSchema = new Schema({
     default : []
   },
   image : {
-    type : String,
+    type :  Array,
   },
   classId : {
     type : String,
