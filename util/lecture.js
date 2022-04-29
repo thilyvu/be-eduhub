@@ -73,7 +73,7 @@ const createLecture = async (req, res) => {
       const newNotification = new Notification({
         title: "Thêm bài giảng mới ",
         type: "create",
-        content: `Giáo viên vừa thêm giảng ${result.name} mới ở ${oldClass.name}`,
+        content: `Giáo viên vừa thêm bài giảng ${result.name} mới ở ${oldClass.name}`,
         userId: student._id,
         metadata: { ClassId: result.classId },
         bannerImg: oldClass.bannerImg,

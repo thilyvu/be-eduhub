@@ -38,6 +38,10 @@ const ClassSchema = new Schema(
       type: Array,
       default: [],
     },
+    pools: {
+      type: Array,
+      default: [],
+    },
     calendars: {
       type: Array,
       default: [],

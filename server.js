@@ -31,6 +31,7 @@ app.use("/api", require("./router/api/users"));
 app.use("/api", require("./router/api/class"));
 app.use("/api", require("./router/api/calendar"));
 app.use("/api", require("./router/api/lecture"));
+app.use("/api", require("./router/api/pool"));
 app.use("/api", require("./router/api/newFeed"));
 app.use("/api", require("./router/api/comment"));
 app.use("/api", require("./router/api/exercise"));
