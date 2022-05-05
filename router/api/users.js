@@ -15,11 +15,15 @@ const {
   deleteUser,
   verifyCode,
   resendEmailVerifiedCode,
+  authFacebook
 } = require("../../util/auth");
 const router = Router();
 
 router.post("/register-user", async (req, res) => {
   await userRegister(req.body, "student", res);
+});
+router.post("/authFacebook", async (req, res) => {
+  await authFacebook(req, res);
 });
 router.post("/register-teacher", async (req, res) => {
   await userRegister(req.body, "teacher", res);

@@ -15,6 +15,14 @@ const poolSchema = new Schema({
     type : Boolean,
     default: false
   },
+  valueForRadio: {
+    type : Number,
+    default : -1
+  },
+  valueForCheckBox: {
+    type : Array,
+    default : []
+  }, 
   classId : {
     type : String,
     required : true

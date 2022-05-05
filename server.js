@@ -1,4 +1,6 @@
 const express = require("express");
+const User = require("./models/users");
+const bcrypt = require("bcryptjs");
 const app = express();
 const mongoose = require("mongoose");
 const { PORT, mongoUri } = require("./config/config");
@@ -6,6 +8,7 @@ const passport = require("passport");
 const cors = require("cors");
 const session = require("express-session");
 const morgan = require("morgan");
+const FacebookStrategy = require('passport-facebook').Strategy;
 app.use(cors());
 app.use(morgan("tiny"));
 app.use(

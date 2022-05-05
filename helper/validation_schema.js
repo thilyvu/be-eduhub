@@ -4,16 +4,17 @@ const userRegisterSchema = Joi.object().keys({
   email: Joi.string().trim().email().required(),
   password: Joi.string()
     .min(6)
-    .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
-    .required(),
-  gender: Joi.string().required(),
+    .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
+  gender: Joi.string(),
   name: Joi.required(),
   province: Joi.string(),
-  username: Joi.string().trim().required(),
-  phone: Joi.string().required(),
+  username: Joi.string().trim(),
+  phone: Joi.string(),
   school: Joi.string(),
-  DOB: Joi.date().required(),
+  DOB: Joi.date(),
   avatar: Joi.string(),
+  authId: Joi.string(),
+  loginType: Joi.string()
 });
 
 const userUpdateSchema = Joi.object().keys({

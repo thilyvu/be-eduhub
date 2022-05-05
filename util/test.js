@@ -208,16 +208,19 @@ const getTestById = async (req, res) => {
     likeTest.listTopics.map((item) => {
       item.listKeys = [];
       item.listAnswers = [];
-      item.listQuestions.map((question) => {
-        question.listKeys = [];
-        question.questionContent = "";
-        question.listAnswersWithoutKey = question.listAnswersWithoutKey.map(
-          (answer) => {
-            return answer.answerContent
-              ? answer.answerContent.replace("[", "").replace("]", "")
-              : answer.replace("[", "").replace("]", "");
-          }
-        );
+      item.listQuestionGroups.map((questionGroup) => {
+        questionGroup.listOldKeys = [];
+        questionGroup.listQuestions.map((question) => {
+          question.listKeys = [];
+          question.questionContent = "";
+          question.listAnswersWithoutKey = question.listAnswersWithoutKey.map(
+            (answer) => {
+              return answer.answerContent
+                ? answer.answerContent.replace("[", "").replace("]", "")
+                : answer.replace("[", "").replace("]", "");
+            }
+          );
+        });
       });
     });
     res.json({

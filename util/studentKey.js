@@ -66,77 +66,18 @@ const createStudentKey = async (req, res) => {
       "-listQuestions",
       "-listAnswers",
     ]);
-    var totalCorrect = 0;
-    var totalQuestions = 0;
-    let listTopics = _.cloneDeep(likeTest.listTopics);
-    let currentQuestionIndex = 0;
 
-    listTopics.map((topic) => {
-      topic.listQuestions.map((question, index) => {
-        totalCorrect += question.numberOfQuestion;
-        totalQuestions += question.numberOfQuestion;
-        if (
-          question.questionType === "Multiple choice with more than one answer"
-        ) {
-          const listKeyIndex = studentKeys[currentQuestionIndex].key.map(
-            (item) => item.index
-          );
-          var contains = question.listKeys.filter((x) =>
-            listKeyIndex.includes(x)
-          );
-          totalCorrect -= question.numberOfQuestion;
-          if (contains && contains.length) {
-            totalCorrect += contains.length;
-          }
-          currentQuestionIndex += 1;
-        } else if (
-          question.questionType === "Yes/No/Not Given" ||
-          question.questionType === "True/False/Not Given" ||
-          question.questionType === "Multiple choice with one answer"
-        ) {
-          if (
-            studentKeys[currentQuestionIndex].key &&
-            studentKeys[currentQuestionIndex].key.length > 0
-          ) {
-            if (
-              studentKeys[currentQuestionIndex].key[0].toString() !==
-              question.listKeys[0].toString()
-            ) {
-              studentKeys[currentQuestionIndex].isCorrect = false;
-              totalCorrect -= 1;
-            }
-          } else {
-            studentKeys[currentQuestionIndex].isCorrect = false;
-            totalCorrect -= 1;
-          }
-          currentQuestionIndex += 1;
-        } else {
-          if (question.listKeys && question.listKeys.length > 1) {
-            question.listKeys.map((keyel, keyElement) => {
-              if (
-                studentKeys[currentQuestionIndex] &&
-                studentKeys[currentQuestionIndex].key &&
-                keyel.replace("[", "").replace("]", "").trim() ===
-                  studentKeys[currentQuestionIndex].key.trim()
-              ) {
-                studentKeys[currentQuestionIndex].isCorrect = true;
-                question.listKeys[keyElement] = {
-                  isCorrect: true,
-                  key: keyel,
-                };
-              } else {
-                totalCorrect -= 1;
-                studentKeys[currentQuestionIndex].isCorrect = false;
-                question.listKeys[keyElement] = {
-                  isCorrect: false,
-                  key: keyel,
-                };
-              }
-              currentQuestionIndex += 1;
-            });
-          }
-        }
-      });
+    let listTopics = _.cloneDeep(likeTest.listTopics);
+    var totalCorrect = likeTest.totalQuestions;
+    var totalQuestions = likeTest.totalQuestions;
+    likeTest.listKeys.map((key, keyIndex) => {
+      if (
+        key.replace("[", "").replace("]", "").trim().toLowerCase() !==
+        studentKeys[keyIndex].key.trim().toLowerCase()
+      ) {
+        totalCorrect--;
+        studentKeys[keyIndex].isCorrect = false;
+      }
     });
     const newStudentKey = new StudentKey({
       ...result,
