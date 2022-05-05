@@ -62,7 +62,7 @@ const testSchema = new Schema(
       default: false,
     },
     countDownTime: {
-      type: Date,
+      type: String,
     },
     createBy: {
       type: String,

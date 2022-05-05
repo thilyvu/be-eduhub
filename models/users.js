@@ -5,6 +5,14 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    authId: {
+      type : String,
+      default : ''
+    },
+    loginType : {
+      type : String,
+      default : 'pass'
+    },
     email: {
       type: String,
       required: true,
@@ -15,12 +23,10 @@ const UserSchema = new Schema(
       enum: ["teacher", "student", "admin"],
     },
     username: {
-      type: String,
-      required: true,
+      type: String
     },
     password: {
-      type: String,
-      required: true,
+      type: String
     },
     phone: {
       type: String,
@@ -36,12 +42,11 @@ const UserSchema = new Schema(
     },
     DOB: {
       type: Date,
-      required: true,
     },
     gender: {
       type: String,
       enum: ["male", "female", "orther"],
-      default: "student",
+      default: "male",
     },
     classes: {
       type: Array,

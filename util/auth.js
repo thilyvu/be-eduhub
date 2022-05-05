@@ -1038,6 +1038,105 @@ const deleteUser = async (req, res) => {
     });
   }
 };
+const authFacebook =  async (req, res) => {
+  try {
+    const result = await userRegisterSchema.validateAsync(req.body);
+    const user = await User.findOne({authId : result.authId});
+    if (!user) {
+      const newUser = new User({
+        ...result,
+        role : 'student',
+      });
+      const createdUser =await newUser.save();
+      let token = jwt.sign(
+        {
+          user_id: createdUser._id,
+          role: createdUser.role,
+          username: createdUser.username,
+          email: createdUser.email,
+        },
+        SECRET,
+        { expiresIn: "2 days" }
+      );
+      let refreshToken = jwt.sign(
+        {
+          user_id: createdUser._id,
+          role: createdUser.role,
+          username: createdUser.username,
+          email: createdUser.email,
+        },
+        SECRET,
+        { expiresIn: "7 days" }
+      );
+  
+      let returnResult = {
+        username: createdUser.username,
+        role: createdUser.role,
+        id: createdUser._id,
+        avatar: createdUser.avatar
+          ? createdUser.avatar
+          : "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-portrait-176256935.jpg?fbclid=IwAR3w7x7XV6ZIro07OzoQPBIpEI2yGu1451we09GJ4_u4ZMS8SiLVcrtlkr0",
+        email: createdUser.email,
+        token: `Bearer ${token}`,
+        refreshToken: `Bearer ${refreshToken}`,
+        expiresIn: 168,
+        name: createdUser.name,
+      };
+      return res.status(200).json({
+        ...returnResult,
+        message: " You are logged in",
+        success: true,
+      });
+    } else {
+      let token = jwt.sign(
+        {
+          user_id: user._id,
+          role: user.role,
+          username: user.username,
+          email: user.email,
+        },
+        SECRET,
+        { expiresIn: "2 days" }
+      );
+      let refreshToken = jwt.sign(
+        {
+          user_id: user._id,
+          role: user.role,
+          username: user.username,
+          email: user.email,
+        },
+        SECRET,
+        { expiresIn: "7 days" }
+      );
+  
+      let returnResult = {
+        username: user.username,
+        role: user.role,
+        id: user._id,
+        avatar: user.avatar
+          ? user.avatar
+          : "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-portrait-176256935.jpg?fbclid=IwAR3w7x7XV6ZIro07OzoQPBIpEI2yGu1451we09GJ4_u4ZMS8SiLVcrtlkr0",
+        email: user.email,
+        token: `Bearer ${token}`,
+        refreshToken: `Bearer ${refreshToken}`,
+        expiresIn: 168,
+        name: user.name,
+      };
+      return res.status(200).json({
+        ...returnResult,
+        message: " You are logged in",
+        success: true,
+      });
+    }
+    
+
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
 module.exports = {
   userRegister,
   userLogin,
@@ -1054,4 +1153,5 @@ module.exports = {
   deleteUser,
   resendEmailVerifiedCode,
   verifyCode,
+  authFacebook
 };

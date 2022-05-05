@@ -9,10 +9,10 @@ const poolCreateSchema = Joi.object().keys({
 })
 
 const poolUpdateSchema = Joi.object().keys({
-    content :Joi.string().trim().required(),
+    content :Joi.string().trim(),
     options: Joi.array(),
     type: Joi.string(),
-    isBlock : Joi.boolean()
+    isBlock : Joi.boolean(),
 
 })
 module.exports= { 
