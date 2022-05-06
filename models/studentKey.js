@@ -45,6 +45,9 @@ const studentKeySchema = new Schema(
     createdUser: {
       type: Object,
     },
+    status : {
+      type :String
+    }
   },
   { timestamps: true }
 );

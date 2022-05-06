@@ -254,7 +254,12 @@ const getTestByClassId = async (req, res) => {
       return;
     }
     const features = new APIfeatures(
-      Test.find({ classIds: { $in: [req.params.classId] } }),
+      Test.find({
+        $and: [
+          ({ classIds: { $in: [req.params.classId] } },
+          { createBy: req.user._id }),
+        ],
+      }),
       req.query
     )
       .filtering()

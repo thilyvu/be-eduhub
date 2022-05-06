@@ -70,31 +70,51 @@ const createStudentKey = async (req, res) => {
     let listTopics = _.cloneDeep(likeTest.listTopics);
     var totalCorrect = likeTest.totalQuestions;
     var totalQuestions = likeTest.totalQuestions;
-    likeTest.listKeys.map((key, keyIndex) => {
-      if (
-        key.replace("[", "").replace("]", "").trim().toLowerCase() !==
-        studentKeys[keyIndex].key.trim().toLowerCase()
-      ) {
-        totalCorrect--;
-        studentKeys[keyIndex].isCorrect = false;
-      }
-    });
-    const newStudentKey = new StudentKey({
-      ...result,
-      listTopics: listTopics,
-      studentId: req.user._id,
-      totalCorrect: totalCorrect,
-      totalQuestions: totalQuestions,
-      createBy: req.user._id,
-      studentKeys: studentKeys,
-    });
-    const newStudentKeyCreated = await newStudentKey.save();
-    return res.status(201).json({
-      message: "New student key create successful ",
-      success: true,
-      totalQuestions: totalQuestions,
-      totalCorrect: totalCorrect,
-    });
+    if (result.status === "started") {
+      const newStudentKey = new StudentKey({
+        ...result,
+        listTopics: listTopics,
+        studentId: req.user._id,
+        totalCorrect: totalCorrect,
+        totalQuestions: totalQuestions,
+        createBy: req.user._id,
+        studentKeys: studentKeys,
+      });
+      const newStudentKeyCreated =  await newStudentKey.save();
+      return res.status(201).json({
+        message: "New student key create successful ",
+        success: true,
+        totalQuestions: totalQuestions,
+        totalCorrect: totalCorrect,
+        newStudentKeyCreated: newStudentKeyCreated
+      });
+    } else {
+      likeTest.listKeys.map((key, keyIndex) => {
+        if (
+          key.replace("[", "").replace("]", "").trim().toLowerCase() !==
+          studentKeys[keyIndex].key.trim().toLowerCase()
+        ) {
+          totalCorrect--;
+          studentKeys[keyIndex].isCorrect = false;
+        }
+      });
+      const newStudentKey = new StudentKey({
+        ...result,
+        listTopics: listTopics,
+        studentId: req.user._id,
+        totalCorrect: totalCorrect,
+        totalQuestions: totalQuestions,
+        createBy: req.user._id,
+        studentKeys: studentKeys,
+      });
+      const newStudentKeyCreated = await newStudentKey.save();
+      return res.status(201).json({
+        message: "New student key create successful ",
+        success: true,
+        totalQuestions: totalQuestions,
+        totalCorrect: totalCorrect,
+      });
+    }
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({
@@ -111,38 +131,62 @@ const createStudentKey = async (req, res) => {
 const updateStudentKey = async (req, res) => {
   try {
     const result = await studentKeyUpdateSchema.validateAsync(req.body);
-    const oldStudentKey = await StudentKey.findById(req.params.id);
-    if (!oldStudentKey) {
-      return res.status(400).json({
-        message: `student key id not exist`,
-        success: false,
+    var studentKeys = _.cloneDeep(result.listKeys);
+    studentKeys = studentKeys.map((studentKey) => {
+      return { isCorrect: true, ...studentKey };
+    });
+    const likeTest = await Test.findById(result.testId).select([
+      "-listQuestions",
+      "-listAnswers",
+    ]);
+    let listTopics = _.cloneDeep(likeTest.listTopics);
+    var totalCorrect = likeTest.totalQuestions;
+    var totalQuestions = likeTest.totalQuestions;
+    if (result.status !== "started") {
+      likeTest.listKeys.map((key, keyIndex) => {
+        if (
+          key.replace("[", "").replace("]", "").trim().toLowerCase() !==
+          studentKeys[keyIndex].key.trim().toLowerCase()
+        ) {
+          totalCorrect--;
+          studentKeys[keyIndex].isCorrect = false;
+        }
+      });
+      const newStudentKey = {
+        ...result,
+        listTopics: listTopics,
+        studentId: req.user._id,
+        totalCorrect: totalCorrect,
+        totalQuestions: totalQuestions,
+        createBy: req.user._id,
+        studentKeys: studentKeys,
+      };
+      const oldStudentKey = await StudentKey.findById(req.params.id);
+      if (!oldStudentKey) {
+        return res.status(400).json({
+          message: `student key id not exist`,
+          success: false,
+        });
+      }
+      const updateStudentKey = {
+        ...newStudentKey,
+        updateBy: req.user.id,
+      };
+      const updatedStudentKey = await Object.assign(
+        oldStudentKey,
+        updateStudentKey
+      );
+      if (!updatedStudentKey) return null;
+      await updatedStudentKey.save();
+  
+      return res.status(201).json({
+        message: "student key update successful ",
+        success: true,
+        data: updatedStudentKey,
       });
     }
-    const updateStudentKey = {
-      ...result,
-      updateBy: req.user.id,
-    };
-    const updatedStudentKey = await Object.assign(
-      oldStudentKey,
-      updateStudentKey
-    );
-    if (!updatedStudentKey) return null;
-    await updatedStudentKey.save();
-    // const lectureId = updatedLecture._id;
-    // const updateClass = await Class.findOneAndUpdate(
-    //   { _id: oldLecture.classId, "lectures._id": lectureId },
-    //   {
-    //     $set: {
-    //       "lectures.$": updatedLecture,
-    //     },
-    //   }
-    // );
 
-    return res.status(201).json({
-      message: "student key update successful ",
-      success: true,
-      data: updatedStudentKey,
-    });
+   
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({

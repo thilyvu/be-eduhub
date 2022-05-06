@@ -8,6 +8,7 @@ const studentKeyCreateSchema = Joi.object().keys({
   listTopics: Joi.array(),
   totalCorrect: Joi.string(),
   totalQuestions: Joi.string(),
+  status: Joi.string(),
 });
 
 const studentKeyUpdateSchema = Joi.object().keys({
@@ -18,6 +19,7 @@ const studentKeyUpdateSchema = Joi.object().keys({
   listTopics: Joi.array(),
   totalCorrect: Joi.string(),
   totalQuestions: Joi.string(),
+  status: Joi.string(),
 });
 const studentKeyGetByClassAndTestSchema = Joi.object().keys({
   classId: Joi.string(),
