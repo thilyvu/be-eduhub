@@ -63,7 +63,7 @@ router.post("/logout", (req, res) => {
 router.get(
   "/getListUsers",
   userAuth,
-  checkRole(["teacher"]),
+  checkRole(["teacher","admin"]),
   async (req, res) => {
     await getListUser(req, res);
   }
