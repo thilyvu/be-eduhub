@@ -80,13 +80,13 @@ const createStudentKey = async (req, res) => {
         createBy: req.user._id,
         studentKeys: studentKeys,
       });
-      const newStudentKeyCreated =  await newStudentKey.save();
+      const newStudentKeyCreated = await newStudentKey.save();
       return res.status(201).json({
         message: "New student key create successful ",
         success: true,
         totalQuestions: totalQuestions,
         totalCorrect: totalCorrect,
-        newStudentKeyCreated: newStudentKeyCreated
+        newStudentKeyCreated: newStudentKeyCreated,
       });
     } else {
       likeTest.listKeys.map((key, keyIndex) => {
@@ -178,15 +178,15 @@ const updateStudentKey = async (req, res) => {
       );
       if (!updatedStudentKey) return null;
       await updatedStudentKey.save();
-  
+
       return res.status(201).json({
         message: "student key update successful ",
         success: true,
         data: updatedStudentKey,
+        totalQuestions: totalQuestions,
+        totalCorrect: totalCorrect,
       });
     }
-
-   
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(444).json({

@@ -1,6 +1,7 @@
 const Comment = require("../models/comment");
 const NewFeed = require("../models/newFeeds");
 const Lecture = require("../models/lectures");
+const User = require("../models/users");
 const Class = require("../models/class");
 const mongoose = require("mongoose");
 const Notification = require("../models/notifications");
@@ -225,7 +226,25 @@ const getListComment = async (req, res) => {
       .sorting()
       .paginating();
 
-    const listComment = await features.query;
+    let listComment = await features.query;
+    const ids = listComment.map((item) => mongoose.Types.ObjectId(item.createBy));
+    let user = await User.find({ _id: { $in: ids } });
+    listComment = listComment.map((item) => {
+      item.createAvatar = user.find(
+        (u) => u._id.toString() === item.createBy.toString()
+      ).avatar;
+      item.createName = user.find(
+        (u) => u._id.toString() === item.createBy.toString()
+      ).name;
+
+      // item.exerciseName =
+      //   exercises.find((u) => {
+      //     if (u) {
+      //       return u.exerciseId.toString() === item.exerciseId.toString();
+      //     }
+      //   }).exerciseName || "";
+      return item;
+    });
     const total = await Comment.countDocuments({});
     return res.status(201).json({
       message: "Get list comment successful",

@@ -16,7 +16,7 @@ const {
 } = require("../../util/class");
 const router = Router();
 
-router.post("/class", userAuth,checkRole(["teacher"]), async (req, res) => {
+router.post("/class", userAuth,checkRole(["teacher","admin"]), async (req, res) => {
   await createClass(req, res);
 });
 router.post("/joinClass/:id", userAuth, async (req, res) => {
@@ -61,7 +61,7 @@ router.put("/class/:id", userAuth, checkRole(["teacher","admin"]), async (req, r
 router.delete(
   "/class/:id",
   userAuth,
-  checkRole(["teacher"]),
+  checkRole(["teacher","admin"]),
   async (req, res) => {
     await deleteClass(req, res);
   }

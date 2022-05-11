@@ -74,7 +74,7 @@ router.get("/getUserByEmail/:email", async (req, res) => {
 router.get(
   "/getUser/:id",
   userAuth,
-  checkRole(["teacher"]),
+  checkRole(["teacher","admin"]),
   async (req, res) => {
     await getUserById(req, req.params.id, res);
   }
@@ -93,7 +93,7 @@ router.get("/user-profile", userAuth, async (req, res) => {
 router.get(
   "/teacher-profile",
   userAuth,
-  checkRole(["teacher"]),
+  checkRole(["teacher","admin"]),
   async (req, res) => {
     return res.json(serializeUser(req.user));
   }
