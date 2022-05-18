@@ -811,10 +811,15 @@ const getClassById = async (req, res) => {
     }
     if (listClass.newFeeds) {
       listClass.newFeeds = listClass.newFeeds.sort(
-        (a, b) =>  b.createdAt.getTime() - a.createdAt.getTime() 
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       );
-      listClass.newFeeds = listClass.newFeeds.sort(
-        (value) =>  value.pin ? -1 : 1 
+      listClass.newFeeds = listClass.newFeeds.sort((value) =>
+        value.pin ? -1 : 1
+      );
+    }
+    if (listClass.lectures) {
+      listClass.lectures = listClass.lectures.sort(
+        (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
       );
     }
 
@@ -860,10 +865,11 @@ const getClassById = async (req, res) => {
             : [];
         })
       : [];
-    const poolIds = listClass.pools ? listClass.pools.flatMap((pool) => {
-      return mongoose.Types.ObjectId(pool.createBy);
-    })
-  : [];
+    const poolIds = listClass.pools
+      ? listClass.pools.flatMap((pool) => {
+          return mongoose.Types.ObjectId(pool.createBy);
+        })
+      : [];
     let commentUsers = await User.find({ _id: { $in: commentIds } });
     listClass.newFeeds = listClass.newFeeds
       ? listClass.newFeeds.map((newFeed) => {
@@ -896,40 +902,42 @@ const getClassById = async (req, res) => {
                   return comment;
                 })
               : [];
+            lecture.comments.sort(
+              (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+            );
           }
 
           return lecture;
         })
       : [];
     let createdUsers = await User.find({ _id: { $in: poolIds } }).select([
-        "-classes",
-        "-password",
-        "-username",
-      ]);
-    listClass.pools = listClass.pools? 
-    listClass.pools.map((pool)=> {
-      pool.createdUser = createdUsers.find(
-        (u) => u._id.toString() === pool.createBy
-      );
-      let valueForRadio =-1;
-      let valueForCheckBox = [];
-      pool.options.map((option,optionIndex) => {
-        option.votes.map((vote)=>{
-          if(vote.userId.toString() === req.user._id.toString()) {
-            valueForRadio = optionIndex;  
-            
-            if(!valueForCheckBox.some(value => value === optionIndex)) {
-              valueForCheckBox.push(optionIndex)
-            }
-          }
+      "-classes",
+      "-password",
+      "-username",
+    ]);
+    listClass.pools = listClass.pools
+      ? listClass.pools.map((pool) => {
+          pool.createdUser = createdUsers.find(
+            (u) => u._id.toString() === pool.createBy
+          );
+          let valueForRadio = -1;
+          let valueForCheckBox = [];
+          pool.options.map((option, optionIndex) => {
+            option.votes.map((vote) => {
+              if (vote.userId.toString() === req.user._id.toString()) {
+                valueForRadio = optionIndex;
+
+                if (!valueForCheckBox.some((value) => value === optionIndex)) {
+                  valueForCheckBox.push(optionIndex);
+                }
+              }
+            });
+          });
+          pool.valueForRadio = valueForRadio;
+          pool.valueForCheckBox = valueForCheckBox;
+          return pool;
         })
-      })
-      pool.valueForRadio = valueForRadio;
-      pool.valueForCheckBox = valueForCheckBox;
-      return pool;
-    }
-     
-    ) : [];
+      : [];
     if (!listClass)
       return res.status(400).json({ msg: "Class does not exist." });
 

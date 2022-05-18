@@ -21,6 +21,9 @@ const testSchema = new Schema(
     status: {
       type: String,
     },
+    subject: {
+      type: String,
+    },
     totalStudents: {
       type: String,
       default: 0,

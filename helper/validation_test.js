@@ -14,6 +14,7 @@ const testCreateSchema = Joi.object().keys({
   listKeys: Joi.array(),
   isShowPoint: Joi.boolean(),
   listAnswers: Joi.array(),
+  subject: Joi.string(),
   countDownTime: Joi.string(),
 });
 
@@ -30,6 +31,7 @@ const testUpdateSchema = Joi.object().keys({
   listKeys: Joi.array(),
   isShowPoint: Joi.boolean(),
   listAnswers: Joi.array(),
+  subject: Joi.string(),
   countDownTime: Joi.string(),
 });
 const testUpdateClassSchema = Joi.object().keys({

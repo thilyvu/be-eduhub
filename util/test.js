@@ -2,6 +2,7 @@ const Test = require("../models/test");
 const User = require("../models/users");
 const StudentKey = require("../models/studentKey");
 const mongoose = require("mongoose");
+var _ = require("lodash");
 const {
   testCreateSchema,
   testUpdateSchema,
@@ -152,7 +153,10 @@ const testValidation = async (testName) => {
 
 const getListTest = async (req, res) => {
   try {
-    const features = new APIfeatures(Test.find(), req.query)
+    const features = new APIfeatures(
+      Test.find({ createBy: req.user._id }),
+      req.query
+    )
       .filtering()
       .sorting()
       .paginating();
@@ -165,24 +169,42 @@ const getListTest = async (req, res) => {
       mongoose.Types.ObjectId(test._id)
     );
     const listStudentKeys = await StudentKey.find({ testId: { $in: testIds } });
-    let createdUsers = await User.find({ _id: { $in: userIds } }).select([
-      "-classes",
-      "-password",
-      "-username",
-    ]);
+    // let createdUsers = await User.find({ _id: { $in: userIds } }).select([
+    //   "-classes",
+    //   "-password",
+    //   "-username",
+    // ]);
     listTest.map((item) => {
-      item.createdUser = createdUsers.find(
-        (u) => u._id.toString() === item.createBy
-      );
+      // item.createdUser = createdUsers.find(
+      //   (u) => u._id.toString() === item.createBy
+      // );
       item.totalStudents = listStudentKeys.filter(
         (sk) => sk.testId.toString() === item._id.toString()
       ).length;
       return item;
     });
+    let listSubjects = [];
+    listTest.map((test) => {
+      listSubjects.push(test.subject);
+    });
+    let listUniqueSubject = _.uniq(listSubjects);
+    let listSubjectWithKey = [];
+    listUniqueSubject.map((subject) => {
+      let listSubjectTest = [];
+      listTest.map((test) => {
+        if (test.subject === subject) {
+          listSubjectTest.push(test);
+        }
+      });
+      listSubjectWithKey.push({
+        subject: subject,
+        listSubjectTest: listSubjectTest,
+      });
+    });
     return res.status(201).json({
       message: "Get list test successful",
       success: true,
-      data: listTest,
+      data: listSubjectWithKey,
     });
   } catch (err) {
     if (err.isJoi === true) {
@@ -255,10 +277,7 @@ const getTestByClassId = async (req, res) => {
     }
     const features = new APIfeatures(
       Test.find({
-        $and: [
-          ({ classIds: { $in: [req.params.classId] } },
-          { createBy: req.user._id }),
-        ],
+        $and: [{ classIds: { $in: [req.params.classId] } }],
       }),
       req.query
     )

@@ -133,12 +133,13 @@ const updateStudentKey = async (req, res) => {
     const result = await studentKeyUpdateSchema.validateAsync(req.body);
     var studentKeys = _.cloneDeep(result.listKeys);
     studentKeys = studentKeys.map((studentKey) => {
-      return { isCorrect: true, ...studentKey };
+      return { isCorrect: true, testKey: "", ...studentKey };
     });
     const likeTest = await Test.findById(result.testId).select([
       "-listQuestions",
       "-listAnswers",
     ]);
+    console.log(likeTest.listKeys);
     let listTopics = _.cloneDeep(likeTest.listTopics);
     var totalCorrect = likeTest.totalQuestions;
     var totalQuestions = likeTest.totalQuestions;
@@ -150,6 +151,10 @@ const updateStudentKey = async (req, res) => {
         ) {
           totalCorrect--;
           studentKeys[keyIndex].isCorrect = false;
+          studentKeys[keyIndex].testKey = key
+            .replace("[", "")
+            .replace("]", "")
+            .trim();
         }
       });
       const newStudentKey = {
@@ -283,6 +288,61 @@ const getStudentKeyByClassAndTestId = async (req, res) => {
     });
   }
 };
+const getCurrentStudentKeyByClassAndTestId = async (req, res) => {
+  try {
+    const result = await studentKeyGetByClassAndTestSchema.validateAsync(
+      req.body
+    );
+    const listStudentKey = await StudentKey.find({
+      $and: [
+        { classId: mongoose.Types.ObjectId(result.classId) },
+        { testId: mongoose.Types.ObjectId(result.testId) },
+        { createBy: mongoose.Types.ObjectId(req.user._id) },
+      ],
+    });
+    const userIds = listStudentKey.flatMap((studentKey) =>
+      mongoose.Types.ObjectId(studentKey.studentId)
+    );
+    let createdUsers = await User.find({ _id: { $in: userIds } }).select([
+      "-classes",
+      "-password",
+      "-username",
+    ]);
+    listStudentKey.map((item, index) => {
+      item.index = index + 1;
+      item.createdUser = createdUsers.find(
+        (u) => u._id.toString() === item.studentId
+      );
+      item.studentKeys.map((key, keyIndex) => {
+        let index = keyIndex + 1;
+        if (key.questionType === "Multiple choice with more than one answer") {
+          index = keyIndex + 2;
+        }
+        key.index = index;
+      });
+      return item;
+    });
+    listStudentKey.sort(function (a, b) {
+      return b.createdAt - a.createdAt;
+    });
+    return res.status(201).json({
+      message: "Get list studentKey successful",
+      success: true,
+      data: listStudentKey,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
 const getStudentKeyById = async (req, res) => {
   try {
     const likeStudentKey = await StudentKey.findById(req.params.id);
@@ -326,4 +386,5 @@ module.exports = {
   getListStudentKey,
   getStudentKeyByClassAndTestId,
   getStudentKeyById,
+  getCurrentStudentKeyByClassAndTestId,
 };
