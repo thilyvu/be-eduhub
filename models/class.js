@@ -74,6 +74,15 @@ const ClassSchema = new Schema(
       type: String,
       default: null,
     },
+    price: {
+      type: String,
+    },
+    totalTime: {
+      type: String,
+    },
+    createdUser: {
+      type: Object,
+    },
   },
   { timestamps: true }
 );

@@ -9,6 +9,8 @@ const classCreateSchema = Joi.object().keys({
   subject: Joi.string().required(),
   grade: Joi.string().required(),
   province: Joi.string(),
+  price: Joi.string(),
+  totalTime: Joi.string(),
 });
 
 const classUpdateSchema = Joi.object().keys({
@@ -21,6 +23,8 @@ const classUpdateSchema = Joi.object().keys({
   grade: Joi.string(),
   province: Joi.string(),
   classCode: Joi.string(),
+  price: Joi.string(),
+  totalTime: Joi.string(),
 });
 const addToClassSchema = Joi.object().keys({
   classId: Joi.string().required(),

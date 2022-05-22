@@ -619,7 +619,6 @@ const getListClassByStudentId = async (req, res) => {
         "-newFeeds",
         "-calendars",
         "-students",
-        "-lectures",
         "-fileFolder",
         "-exercise",
       ]),
@@ -630,6 +629,20 @@ const getListClassByStudentId = async (req, res) => {
       .paginating();
 
     const listClass = await features.query;
+    const userIds = listClass.flatMap((item) =>
+      mongoose.Types.ObjectId(item.createBy)
+    );
+    let createdUsers = await User.find({ _id: { $in: userIds } }).select([
+      "-classes",
+      "-password",
+      "-username",
+    ]);
+    listClass.map((item) => {
+      item.createdUser = createdUsers.find(
+        (u) => u._id.toString() === item.createBy
+      );
+      return item;
+    });
     // const listClass = await Class.find({
     //   $or: [
     //     ({
@@ -986,6 +999,20 @@ const getListClass = async (req, res) => {
       .paginating();
     const total = await Class.countDocuments({});
     const listClass = await features.query;
+    const userIds = listClass.flatMap((item) =>
+      mongoose.Types.ObjectId(item.createBy)
+    );
+    let createdUsers = await User.find({ _id: { $in: userIds } }).select([
+      "-classes",
+      "-password",
+      "-username",
+    ]);
+    listClass.map((item) => {
+      item.createdUser = createdUsers.find(
+        (u) => u._id.toString() === item.createBy
+      );
+      return item;
+    });
     return res.status(201).json({
       message: "Get list class successful",
       success: true,
