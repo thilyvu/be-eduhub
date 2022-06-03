@@ -591,7 +591,12 @@ const updateProfile = async (req, res) => {
 const userLogin = async (userCreds, role, res) => {
   try {
     let { username, password, email } = userCreds;
-    const user = await User.findOne({ $or: [{ username }, { email: email }] });
+    let user;
+    if (username) {
+      user = await User.findOne({ username: username });
+    } else {
+      user = await User.findOne({ email: email });
+    }
     if (!user) {
       return res.status(404).json({
         message: "Username or email not found. Invalid login credentials",
@@ -605,7 +610,9 @@ const userLogin = async (userCreds, role, res) => {
     //     success: false
     //   })
     // }
+    console.log(user);
     let isMatch = await bcrypt.compare(password, user.password);
+
     if (isMatch) {
       let token = jwt.sign(
         {
@@ -1038,16 +1045,16 @@ const deleteUser = async (req, res) => {
     });
   }
 };
-const authFacebook =  async (req, res) => {
+const authFacebook = async (req, res) => {
   try {
     const result = await userRegisterSchema.validateAsync(req.body);
-    const user = await User.findOne({authId : result.authId});
+    const user = await User.findOne({ authId: result.authId });
     if (!user) {
       const newUser = new User({
         ...result,
-        role : 'student',
+        role: "student",
       });
-      const createdUser =await newUser.save();
+      const createdUser = await newUser.save();
       let token = jwt.sign(
         {
           user_id: createdUser._id,
@@ -1068,7 +1075,7 @@ const authFacebook =  async (req, res) => {
         SECRET,
         { expiresIn: "7 days" }
       );
-  
+
       let returnResult = {
         username: createdUser.username,
         role: createdUser.role,
@@ -1108,7 +1115,7 @@ const authFacebook =  async (req, res) => {
         SECRET,
         { expiresIn: "7 days" }
       );
-  
+
       let returnResult = {
         username: user.username,
         role: user.role,
@@ -1128,8 +1135,6 @@ const authFacebook =  async (req, res) => {
         success: true,
       });
     }
-    
-
   } catch (err) {
     return res.status(500).json({
       message: err.message,
@@ -1153,5 +1158,5 @@ module.exports = {
   deleteUser,
   resendEmailVerifiedCode,
   verifyCode,
-  authFacebook
+  authFacebook,
 };
