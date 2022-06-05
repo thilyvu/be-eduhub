@@ -250,7 +250,7 @@ const getExerciseByClassId = async (req, res) => {
       return item;
     });
     listExercise = listExercise.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
     );
     return res.status(201).json({
       message: "Get list exercise successful",
