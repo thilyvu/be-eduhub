@@ -249,6 +249,9 @@ const getExerciseByClassId = async (req, res) => {
       }
       return item;
     });
+    listExercise = listExercise.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
     return res.status(201).json({
       message: "Get list exercise successful",
       success: true,

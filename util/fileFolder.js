@@ -129,7 +129,7 @@ const createFile = async (req, res) => {
       const oldClass = await Class.findById(Mongoose.Types.ObjectId(classId));
       oldClass.students.forEach(async (student) => {
         const newNotification = new Notification({
-          title: "Thêm tài liệu ",
+          title: "Thêm học liệu ",
           type: "create",
           content: `Giáo viên vừa thêm 1 file ở ${oldClass.name}`,
           userId: student._id,
@@ -238,7 +238,7 @@ const createFolder = async (req, res) => {
       const oldClass = await Class.findById(Mongoose.Types.ObjectId(classId));
       oldClass.students.forEach(async (student) => {
         const newNotification = new Notification({
-          title: "Thêm tài liệu ",
+          title: "Thêm học liệu ",
           type: "create",
           content: `Giáo viên vừa tạo 1 thư mục ở ${oldClass.name}`,
           userId: student._id,
