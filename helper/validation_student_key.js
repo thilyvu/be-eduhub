@@ -25,8 +25,14 @@ const studentKeyGetByClassAndTestSchema = Joi.object().keys({
   classId: Joi.string(),
   testId: Joi.string(),
 });
+const studentKeyGetByClassAndTestAndStudentIdSchema = Joi.object().keys({
+  classId: Joi.string(),
+  testId: Joi.string(),
+  studentId: Joi.string(),
+});
 module.exports = {
   studentKeyCreateSchema,
   studentKeyUpdateSchema,
   studentKeyGetByClassAndTestSchema,
+  studentKeyGetByClassAndTestAndStudentIdSchema,
 };

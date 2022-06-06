@@ -618,7 +618,6 @@ const getListClassByStudentId = async (req, res) => {
         "-approveMode",
         "-newFeeds",
         "-calendars",
-        "-students",
         "-fileFolder",
         "-exercise",
       ]),

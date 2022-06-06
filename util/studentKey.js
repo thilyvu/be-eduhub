@@ -6,6 +6,7 @@ const {
   studentKeyCreateSchema,
   studentKeyUpdateSchema,
   studentKeyGetByClassAndTestSchema,
+  studentKeyGetByClassAndTestAndStudentIdSchema,
 } = require("../helper/validation_student_key");
 const mongoose = require("mongoose");
 const User = require("../models/users");
@@ -343,6 +344,37 @@ const getCurrentStudentKeyByClassAndTestId = async (req, res) => {
     });
   }
 };
+const getCurrentStudentKeyByClassAndTestIdAndStudentId = async (req, res) => {
+  try {
+    const result =
+      await studentKeyGetByClassAndTestAndStudentIdSchema.validateAsync(
+        req.body
+      );
+    const listStudentKey = await StudentKey.find({
+      $and: [
+        { classId: mongoose.Types.ObjectId(result.classId) },
+        { testId: mongoose.Types.ObjectId(result.testId) },
+        { studentId: mongoose.Types.ObjectId(result.studentId) },
+      ],
+    });
+    return res.status(201).json({
+      message: "Get list studentKey successful",
+      success: true,
+      data: listStudentKey,
+    });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(444).json({
+        message: err.message,
+        success: false,
+      });
+    }
+    return res.status(500).json({
+      message: err.message,
+      success: false,
+    });
+  }
+};
 const getStudentKeyById = async (req, res) => {
   try {
     const likeStudentKey = await StudentKey.findById(req.params.id);
@@ -387,4 +419,5 @@ module.exports = {
   getStudentKeyByClassAndTestId,
   getStudentKeyById,
   getCurrentStudentKeyByClassAndTestId,
+  getCurrentStudentKeyByClassAndTestIdAndStudentId,
 };
